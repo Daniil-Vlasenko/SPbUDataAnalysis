@@ -1,4 +1,4 @@
-"0","cov2cor(vcov(model.s))"
+"0","cov2cor(vcov(model))"
 "1","           "
 "1"," (Intercept)"
 "1","   PRESTIGE"

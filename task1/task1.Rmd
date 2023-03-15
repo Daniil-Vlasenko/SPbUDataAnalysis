@@ -31,7 +31,7 @@ F-statistic p-value меньше 0.5, модель значима.
 Теперь стандартизируем коэффициенты регрессии.
 ```{r}
 library(lm.beta)
-model.s <- lm.beta(model)
+model.st <- lm.beta(model)
 summary(model.s)
 ```
 
@@ -40,7 +40,7 @@ summary(model.s)
 Тут нужно будет порисовать что-то.
 Посмотрим на корреляционную матрицу между коэффициентами модели.
 ```{r}
-cov2cor(vcov(model.s))
+cov2cor(vcov(model))
 ```
 
 ```{r}
@@ -71,3 +71,35 @@ ols_correlations(model)
 ```
 
 Большая частная корреляция у SCHOOL, т.е. менее предпочтительно ее исключать.
+
+Удалим PRESTIGE из модели
+```{r}
+model.p = lm(SUICIDE~INCOME+SCHOOL, data=df)
+model.st.p <- lm.beta(model.p)
+summary(model.st.p)
+```
+Ранее было:
+Residual standard error: 10.37 on 32 degrees of freedom
+Multiple R-squared:  0.2995,	Adjusted R-squared:  0.2339 
+F-statistic: 4.562 on 3 and 32 DF,  p-value: 0.009039
+
+Модель все еще значима.
+
+Удалим INCOME из модели.
+```{r}
+model.p.i = lm(SUICIDE~SCHOOL, data=df)
+model.st.p.i <- lm.beta(model.p.i)
+summary(model.st.p.i)
+```
+Ранее было (с двумя признаками):
+Residual standard error: 10.37 on 32 degrees of freedom
+Multiple R-squared:  0.2995,	Adjusted R-squared:  0.2339 
+F-statistic: 4.562 on 3 and 32 DF,  p-value: 0.009039
+
+Ранее было (с всеми признаками):
+Residual standard error: 10.58 on 33 degrees of freedom
+Multiple R-squared:  0.2479,	Adjusted R-squared:  0.2023 
+F-statistic: 5.439 on 2 and 33 DF,  p-value: 0.009085
+
+Такая модель незначима. Следовательно, рекомендуемая модель при зависимом признаке 
+SUICIDE включает в себя независиммые признаки SCHOOL и INCOME.
