@@ -1,3 +1,2 @@
 "0","df <- read_xls(""PRESTIGE (1).xls"")"
-"2","New names:"
 "0","head(df)"

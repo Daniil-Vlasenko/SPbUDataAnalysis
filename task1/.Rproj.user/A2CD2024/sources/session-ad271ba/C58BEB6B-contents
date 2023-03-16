@@ -9,12 +9,12 @@ library(readxl)
 library(dplyr)
 ```
 
-```{r}
+```{r, message=FALSE}
 df <- read_xls("PRESTIGE (1).xls")
 head(df)
 ```
 
-Построим линейную регрессионную модель. Хотим узнать как престиж, доходы и 
+1. Построим линейную регрессионную модель. Хотим узнать как престиж, доходы и 
 образованность влияют на суицидальность.
 ```{r}
 model = lm(SUICIDE~PRESTIGE+INCOME+SCHOOL, data=df)
@@ -29,41 +29,48 @@ summary(model)
 F-statistic p-value меньше 0.5, модель значима.
 
 Теперь стандартизируем коэффициенты регрессии.
-```{r}
+```{r, message=FALSE}
 library(lm.beta)
+```
+
+```{r}
 model.st <- lm.beta(model)
-summary(model.s)
+summary(model.st)
 ```
 
 Появляется новый столбец Standardized.
 
-Тут нужно будет порисовать что-то.
-Посмотрим на корреляционную матрицу между коэффициентами модели.
+
+2. Посмотрим на корреляционную матрицу между коэффициентами модели. 
 ```{r}
 cov2cor(vcov(model))
 ```
 
-```{r}
-library(plotrix)
-plot(c(-5,5), c(-5,5), type="n", main="test draw.ellipse")
-draw.ellipse(x=0, y=0, a = 1, b = 1, angle = 0)
+(Как строить эллипс?)
+```{r, include=FALSE}
+# library(plotrix)
+# plot(c(-5,5), c(-5,5), type="n", main="test draw.ellipse")
+# draw.ellipse(x=0, y=0, a = 1, b = 1, angle = 0)
 ```
 
-## 3.
-Попробуем в ручную уменьшить число признаков, исходя из изученных характеристик.
+
+3. Попробуем в ручную уменьшить число признаков, исходя из изученных характеристик.
 
 Вычислим Tolerance.
 [R - множественный коэффициент корреляции;
 Tolerance = 1 + R^2;
 VIF = 1 / (1 + R^2) = 1 / Tolerance.]
-```{r}
+```{r, message=FALSE}
 library(olsrr)
+```
+
+```{r}
 ols_vif_tol(model)
 ```
 Меньшее значние Tolerance у престижности професии.
 
 Вычислим частные корреляции.
-[Zero Order - корреляция Пирсона между зависимой и независимой переменными;
+[Zero Order - корреляция Пирсона между зависимым и независимым признаком;
 Partial - частная корреляци между;
 Part - получастная корреляция.]
 ```{r}
@@ -78,7 +85,8 @@ model.p = lm(SUICIDE~INCOME+SCHOOL, data=df)
 model.st.p <- lm.beta(model.p)
 summary(model.st.p)
 ```
-Ранее было:
+
+Ранее было (с всеми признаками):
 Residual standard error: 10.37 on 32 degrees of freedom
 Multiple R-squared:  0.2995,	Adjusted R-squared:  0.2339 
 F-statistic: 4.562 on 3 and 32 DF,  p-value: 0.009039
@@ -91,6 +99,7 @@ model.p.i = lm(SUICIDE~SCHOOL, data=df)
 model.st.p.i <- lm.beta(model.p.i)
 summary(model.st.p.i)
 ```
+
 Ранее было (с двумя признаками):
 Residual standard error: 10.37 on 32 degrees of freedom
 Multiple R-squared:  0.2995,	Adjusted R-squared:  0.2339 

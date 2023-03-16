@@ -1,0 +1,3 @@
+"0","# library(plotrix)"
+"0","# plot(c(-5,5), c(-5,5), type=""n"", main=""test draw.ellipse"")"
+"0","# draw.ellipse(x=0, y=0, a = 1, b = 1, angle = 0)"
