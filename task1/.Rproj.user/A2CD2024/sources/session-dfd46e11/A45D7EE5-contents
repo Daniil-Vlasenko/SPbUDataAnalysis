@@ -1,0 +1,48 @@
+---
+title: "task1_2"
+output: html_document
+date: "2023-03-17"
+---
+
+```{r}
+library(numDeriv)
+library(ggplot2)
+p <- function(x, a = 1, b = 1, l = 2){(a/b)^(l/2)/(2*besselK(sqrt(a*b), l))*x^(l-1)*exp(-1/2*(a*x+b/x))}
+
+log_p <- function(x,  a = 1, b = 1, l = 2){
+  l/2*(log(a) - log(b)) - log(2*besselK(sqrt(a*b), l)) + (l-1)*log(x) - 1/2*(a*x + b/x)
+}
+```
+
+```{r}
+ggplot(data.frame(x=c(0.05,20)), aes(x)) +
+  stat_function(fun=p, geom="line")+
+  ggtitle("p(x)")
+```
+
+```{r}
+ggplot(data.frame(x=c(0.05,20)), aes(x))+
+  stat_function(fun=log_p, geom="line")+
+  ggtitle("Log_p(x)")
+```
+
+```{r}
+ymin = 0
+ymax = Inf
+```
+
+```{r}
+zfix = function(yfixed)
+{
+    yf0 = head(yfixed, n=-1)
+    yf1 = tail(yfixed, n=-1)
+    zfixed = yf0 + (log_p(yf0) - log_p(yf1) + (yf1 - yf0)*numDeriv::grad(log_p,yf1)) / (numDeriv::grad(log_p,yf1) - numDeriv::grad(log_p,yf0))
+    return(zfixed)  
+}
+
+yfixed <- seq( from=0.05 , to=20 , length.out=20 )
+
+z_grid <- zfix(yfixed)
+z_grid
+```
+

@@ -1,0 +1,3 @@
+"0","ggplot(data.frame(x=c(0.05,20)), aes(x))+"
+"0","  stat_function(fun=log_p, geom=""line"")+"
+"0","  ggtitle(""Log_p(x)"")"

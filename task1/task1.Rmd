@@ -14,6 +14,23 @@ df <- read_xls("PRESTIGE (1).xls")
 head(df)
 ```
 
+```{r, message=FALSE}
+library(ggplot2)
+library(GGally)
+```
+
+Посмотрим на данные.
+```{r, message=FALSE}
+df %>% select(PRESTIGE, SUICIDE, INCOME, SCHOOL) %>% 
+  ggpairs(diag=list(continuous = "barDiag"))
+```
+
+```{r, message=FALSE, include=FALSE}
+df %>% select(PRESTIGE, SUICIDE, INCOME, SCHOOL) %>% 
+  mutate(INCOME = log(INCOME)) %>%
+  ggpairs(diag=list(continuous = "barDiag"))
+```
+
 1. Построим линейную регрессионную модель. Хотим узнать как престиж, доходы и 
 образованность влияют на суицидальность.
 ```{r}
@@ -43,6 +60,7 @@ summary(model.st)
 
 2. Посмотрим на корреляционную матрицу между коэффициентами модели. 
 ```{r}
+vcov(model)
 cov2cor(vcov(model))
 ```
 
@@ -90,12 +108,19 @@ summary(model.st.p)
 Residual standard error: 10.37 on 32 degrees of freedom
 Multiple R-squared:  0.2995,	Adjusted R-squared:  0.2339 
 F-statistic: 4.562 on 3 and 32 DF,  p-value: 0.009039
+```{r}
+cov2cor(vcov(model.p))
+```
 
 Модель все еще значима.
+```{r}
+ols_vif_tol(model.p)
+# ols_correlations(model.p)
+```
 
 Удалим INCOME из модели.
 ```{r}
-model.p.i = lm(SUICIDE~SCHOOL, data=df)
+model.p.i = lm(SUICIDE~INCOME, data=df)
 model.st.p.i <- lm.beta(model.p.i)
 summary(model.st.p.i)
 ```

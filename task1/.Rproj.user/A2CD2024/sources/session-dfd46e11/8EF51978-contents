@@ -1,0 +1,355 @@
+a=10
+b=10
+lambda=0.4
+
+p<-function(x) (a/b)^(lambda/2)*x^(lambda-1)*exp((-a*x-b/x)/2)/(2*besselK(sqrt(a*b),lambda))
+
+h<-function(x) log(p(x))
+
+x0=b/(1-lambda)
+
+k=10
+set.seed(70)
+
+X<-seq(0,x0,length.out=k+1)[-1]
+
+line_value<-function(x,x0,y0,x1,y1) {
+  if(is.na(x1))
+    return(y0-a*(x-x0)/2)
+  (y1-y0)*(x-x0)/(x1-x0)+y0
+}
+line_integral<-function(x0,y0,x1=Inf,y1=Inf,xl=x0,xr=x1){
+  if(is.infinite(x1))
+    return(2*exp(y0)/a)
+  yx<-(y1-y0)/(x1-x0)
+  (x1-x0)*(exp(yx*xr)-exp(yx*xl))*exp(y0-yx*x0)/(y1-y0)
+}
+
+line_intersection<-function(x0,y0,x1,y1,x2,y2,x3,y3){
+  p<-(y3-y2)/(x3-x2)
+  m<-(y1-y0)/(x1-x0)
+  z<-(p*x2-m*x0+y0-y2)/(p-m)
+}
+
+count_weights<-function(X,tail=TRUE){
+  H<-h(X)
+  A<-vector()
+  B<-vector()
+  W<-line_integral(X[1],H[1],X[2],H[2],0,X[1])
+  A<-(H[2]-H[1])/(X[2]-X[1])
+  B<-(H[1]-A*X[1])
+  W[2]<-line_integral(X[2],H[2],X[3],H[3],X[1],X[2])
+  A[2]<-(H[3]-H[2])/(X[3]-X[2])
+  B[2]<-(H[2]-A[2]*X[2])
+  Z<-c(0,X[1:2])
+  j<-3
+  for(i in 3:tail(which(X<x0),1)){
+    z<-line_intersection(X[i-2],H[i-2],X[i-1],H[i-1],X[i],H[i],X[i+1],H[i+1])
+    A[j]<-(H[i-1]-H[i-2])/(X[i-1]-X[i-2])
+    B[j]<-H[i-2]-A[j]*X[i-2]
+    Z<-append(Z,z)
+    W<-append(W,line_integral(X[i-2],H[i-2],X[i-1],H[i-1],X[i-1],z))
+    Z<-append(Z,X[i])
+    W<-append(W,line_integral(X[i],H[i],X[i+1],H[i+1],z,X[i]))
+    A[j+1]<-(H[i+1]-H[i])/(X[i+1]-X[i])
+    B[j+1]<-H[i]-A[j+1]*X[i]
+    j<-j+2
+  }
+  if(!tail)
+    return(list(Z=Z,W=W,A=A,B=B))
+  Z<-append(Z,X[i+1])
+  W<-append(W,line_integral(X[i-1],H[i-1],X[i],H[i],X[i],X[i+1]))
+  A[j]<-(H[i]-H[i-1])/(X[i]-X[i-1])
+  B[j]<-(H[i-1]-A[j]*X[i-1])
+  l<-length(X)
+  k<-j+1
+  if(i+2<=l){
+    for(j in (i+2):l){
+      Z<-append(Z,X[j])
+      W<-append(W,line_integral(X[j-1],H[j-1],X[j],H[j]))
+      A[k]<-(H[j]-H[j-1])/(X[j]-X[j-1])
+      B[k]<-H[j-1]-A[k]*X[j-1]
+      k<-k+1
+    }  
+  }
+  Z<-append(Z,Inf)
+  W<-append(W,line_integral(X[l],H[l]))
+  A[k]<- -a/2
+  B[k]<- H[l]+a*X[l]/2
+  return(list(Z=Z,W=W,A=A,B=B))
+}
+
+line_simulate<-function(x0,y0,x1=Inf,y1=Inf,xl=x0,xr=x1){
+  if(is.infinite(x1))
+    return(x0-2*log(runif(1))/a)
+  I<-line_integral(x0,y0,x1,y1,xl,xr)
+  yx<-(y1-y0)/(x1-x0)
+  (x1-x0)*log(runif(1)*I*yx*exp(yx*x0-y0)+exp(yx*xl))/(y1-y0)
+}
+
+line_simulate_ab<-function(kk,b,xl,xr){
+  alpha<-runif(1)
+  #print(kk)
+  log(alpha*(exp(kk*xr)-exp(kk*xl))+exp(kk*xl))/kk
+}
+  
+exp_simulate<-function(Z,W,A,B){
+  H<-h(Z)
+  i<-sample(length(Z)-1,1,prob=W/sum(W))
+  return(line_simulate_ab(A[i],B[i],Z[i],Z[i+1]))
+  # if(i==1)
+  #   return(line_simulate(Z[1],line_value(Z[1],Z[2],H[2],Z[3],H[3]),Z[2],H[2],Z[1],Z[2]))
+  # if(i==2)
+  #   return(line_simulate(Z[2],line_value(Z[2],Z[3],H[3],Z[5],H[5]),Z[3],H[3],Z[2],Z[3]))
+  # if(i==3)
+  #   return(line_simulate(Z[2],H[2],Z[3],H[3],Z[3],Z[4]))
+  # if(i==tail(which(Z<x0),2)[1])
+  #   return(line_simulate(Z[i+1],H[i+1],Z[i+2],H[i+2],Z[i],Z[i+1]))
+  # if(i>tail(which(Z<x0),1))
+  #   return(line_simulate(Z[i],H[i],Z[i+1],H[i+1]))
+  # if(i%%2)
+  #   return(line_simulate(Z[i-2],H[i-2],Z[i],H[i],Z[i],Z[i+1]))
+  # line_simulate(Z[i+1],H[i+1],Z[i+3],H[i+3],Z[i],Z[i+1])
+}
+
+major<-function(x,X){
+  H<-h(X)
+  if(x<X[1])
+    return(line_value(x,X[1],H[1],X[2],H[2]))
+  if(x<X[2])
+    return(line_value(x,X[2],H[2],X[3],H[3]))
+  if(x>=tail(X,1)){
+    l<-length(X)
+    return(H[l]-a*(x-X[l])/2)
+  }
+  if(x>x0){
+    i<-which(x<X)[1]
+    return(line_value(x,X[i-1],H[i-1],X[i],H[i]))
+  }
+  if(x>X[tail(which(X<x0),1)]){
+    i<-tail(which(X<x0),1)
+    return(line_value(x,X[i-1],H[i-1],X[i],H[i]))
+  }
+  i<-tail(which(x>X),1)
+  min(line_value(x,X[i-1],H[i-1],X[i],H[i]),line_value(x,X[i+1],H[i+1],X[i+2],H[i+2]))
+}
+
+minor<-function(x,X){
+  H<-h(X)
+  print(x)
+  if((x<X[1])||(x>x0)&&(all(X<=x0))||(anyNA(X)))
+    return(-Inf)
+  if(x>=tail(X,1)){
+    l<-length(X)
+    return(line_value(x,X[l-1],H[l-1],X[l],H[l]))
+  }
+  if((x>x0)&&(x<X[which(X>x0)[1]])){
+    i<-which(x<X)[1]
+    if(i==length(X))
+      return(tail(H,1)-a*(x-tail(X,1))/2)
+    return(line_value(x,X[i],H[i],X[i+1],H[i+1]))
+  }
+  if(x<x0){
+    i<-which(x<X)[1]
+    return(line_value(x,X[i-1],H[i-1],X[i],H[i]))
+  }
+  i<-tail(which(x>X),1)
+  max(line_value(x,X[i-1],H[i-1],X[i],H[i]),line_value(x,X[i+1],H[i+1],X[i+2],H[i+2]))
+}
+
+add_point<-function(x,X,Z,W,A,B){
+  
+  print(x)
+  if(sum(W)<1+0.1)
+   return(list(X=X,Z=Z,W=W,A=A,B=B))
+  if(x<X[1])
+    X<-append(X,x,0)
+  else{
+    i<-tail(which(x>X),1)
+    X<-append(X,x,i)
+  }
+  WWW<-count_weights(X)
+  return(list(X=X,Z=WWW$Z,W=WWW$W,A=WWW$A,B=WWW$B))
+  if(is.infinite(h(x)))
+    return(list(X=X,Z=Z,W=W))
+  # H<-h(X)
+  # X0<-X
+  # Z0<-Z
+  # W0<-W
+  # if(x<X[1]){
+  #   X<-append(X,x,0)
+  #   w<-count_weights(X[1:4],FALSE)
+  #   W<-append(W,c(0,0),0)
+  #   W[1:4]<-w$W[1:4]
+  #   Z<-append(Z,c(0,0),0)
+  #   Z[1:4]<-w$Z[1:4]
+  #   if(anyNA(W)||(any(is.infinite(W))))
+  #     return(list(X=X0,Z=Z0,W=W0))
+  #   return(list(X=X,Z=Z,W=W))
+  # }
+  # if(x<X[2]){
+  #   X<-append(X,x,1)
+  #   w<-count_weights(X[1:6],FALSE)
+  #   #print(W)
+  #   #print(w$Z)
+  #   W<-append(W,c(0,0),0)
+  #   W[1:6]<-w$W[1:6]
+  #   Z<-append(Z,c(0,0),1)
+  #   Z[1:6]<-w$Z[1:6]
+  #   if(anyNA(W)||(any(is.infinite(W))))
+  #     return(list(X=X0,Z=Z0,W=W0))
+  #   return(list(X=X,Z=Z,W=W))
+  # }
+  # if(x<X[3]){
+  #   #print(W[1:9])
+  #   W[2]<-line_integral(X[2],H[2],x,h(x),X[1],X[2])
+  #   z<-line_intersection(X[1],H[1],X[2],H[2],x,h(x),X[3],H[3])
+  #   W[3]<-line_integral(X[1],H[1],X[2],H[2],X[2],z)
+  #   W<-append(W,line_integral(x,h(x),X[3],H[3],z,x),3)
+  #   Z[4]<-z
+  #   Z<-append(Z,x,4)
+  #   z<-line_intersection(X[2],H[2],x,h(x),X[3],H[3],X[4],H[4])
+  #   W<-append(W,line_integral(X[2],H[2],x,h(x),x,z),4)
+  #   W[6]<-line_integral(X[3],H[3],X[4],H[4],z,X[3])
+  #   Z<-append(Z,z,5)
+  #   z<-line_intersection(x,h(x),X[3],H[3],X[4],H[4],X[5],H[5])
+  #   W[7]<-line_integral(x,h(x),X[3],H[3],X[3],z)
+  #   W[8]<-line_integral(X[4],H[4],X[5],H[5],z,X[4])
+  #   Z[8]<-z
+  #   X<-append(X,x,2)
+  #   if(anyNA(W)||(any(is.infinite(W))))
+  #     return(list(X=X0,Z=Z0,W=W0))
+  #   #print(W[1:9])
+  #   return(list(X=X,Z=Z,W=W))
+  # }
+  # if(x>tail(X,1)){
+  #   l<-length(W)
+  #   W[l]<-line_integral(tail(X,1),h(tail(X,1)),x,h(x))
+  #   W[l+1]<-line_integral(x,h(x))
+  #   X<-append(X,x)
+  #   Z<-append(Z,x,length(Z)-1)
+  #   return(list(X=X,Z=Z,W=W))
+  # }
+  # if(x>x0){
+  #   i<-tail(which(x>Z),1)
+  #   W[i]<-line_integral(Z[i],h(Z[i]),x,h(x))
+  #   W<-append(W,line_integral(x,h(x),Z[i+1],h(Z[i+1])),i)
+  #   Z<-append(Z,x,i)
+  #   X<-append(X,x,tail(which(x>X),1))
+  #   return(list(X=X,Z=Z,W=W))  
+  # }
+  # if(x>X[tail(which(X<x0),1)]){
+  #   i<-tail(which(x>X),1)
+  #   j<-tail(which(x>Z),1)
+  #   z<-line_intersection(X[i-2],h(X[i-2]),X[i-1],h(X[i-1]),X[i],h(X[i]),x,h(x))
+  #   W[j-2]<-line_integral(X[i-2],h(X[i-2]),X[i-1],h(X[i-1]),X[i-1],z)
+  #   W[j-1]<-line_integral(X[i],h(X[i]),x,h(x),z,X[i])
+  #   Z[j-1]<-z
+  #   z<-line_intersection(X[i-1],h(X[i-1]),X[i],h(X[i]),x,h(x),X[i+1],h(X[i+1]))
+  #   W[j]<-line_integral(X[i-1],h(X[i-1]),X[i],h(X[i]),X[i],z)
+  #   W<-append(W,line_integral(x,h(x),X[i+1],h(X[i+1]),z,x),j)
+  #   #ccc<-function(y) exp((h(X[i+1])-h(x))/(X[i+1]-x)*(y-x)+h(x))
+  #   #aa<-integrate(ccc,z,x)
+  #   Z<-append(Z,z,j)
+  #   W<-append(W,line_integral(x,h(x),X[i+1],h(X[i+1]),x,X[i+1]),j+1)
+  #   Z<-append(Z,x,j+1)
+  #   X<-append(X,x,i)
+  #   return(list(X=X,Z=Z,W=W))
+  # }
+  # if(x>X[tail(which(X<x0),2)[1]]){
+  #   i<-tail(which(x>X),1)
+  #   j<-which(Z>X[i])[1]-1
+  #   z<-line_intersection(X[i-2],h(X[i-2]),X[i-1],h(X[i-1]),X[i],h(X[i]),x,h(x))
+  #   W[j-2]<-line_integral(X[i-2],h(X[i-2]),X[i-1],h(X[i-1]),X[i-1],z)
+  #   W[j-1]<-line_integral(X[i],h(X[i]),x,h(x),z,X[i])
+  #   Z[j-1]<-z
+  #   z<-line_intersection(X[i-1],h(X[i-1]),X[i],h(X[i-1]),x,h(x),X[i+1],h(X[i+1]))
+  #   W[j]<-line_integral(X[i-1],h(X[i-1]),X[i],h(X[i]),X[i],z)
+  #   W[j+1]<-line_integral(x,h(x),X[i+1],h(X[i+1]),z,x)
+  #   Z[j+1]<-z
+  #   Z<-append(Z,x,j+1)
+  #   z<-line_intersection(X[i],h(X[i]),x,h(x),X[i+1],h(X[i+1]),X[i+2],h(X[i+2]))
+  #   W<-append(W,line_integral(X[i],h(X[i]),x,h(x),x,z),j+1)
+  #   W<-append(W,line_integral(X[i+1],h(X[i+1]),X[i+2],h(X[i+2]),z,X[i+1]),j+2)
+  #   Z<-append(Z,z,j+2)
+  #   W[j+4]<-line_integral(x,h(x),X[i+1],h(X[i+1]),X[i+1],X[i+2])
+  #   X<-append(X,x,i)
+  #   return(list(X=X,Z=Z,W=W))
+  # }
+  # i<-tail(which(x>X),1)
+  # j<-which(Z>X[i])[1]-1
+  # z<-line_intersection(X[i-2],h(X[i-2]),X[i-1],h(X[i-1]),X[i],h(X[i]),x,h(x))
+  # W[j-2]<-line_integral(X[i-2],h(X[i-2]),X[i-1],h(X[i-1]),X[i-1],z)
+  # W[j-1]<-line_integral(X[i],h(X[i]),x,h(x),z,X[i])
+  # Z[j-1]<-z
+  # z<-line_intersection(X[i-1],h(X[i-1]),X[i],h(X[i]),x,h(x),X[i+1],h(X[i+1]))
+  # W[j]<-line_integral(X[i-1],h(X[i-1]),X[i],h(X[i]),X[i],z)
+  # W[j+1]<-line_integral(x,h(x),X[i+1],h(X[i+1]),z,x)
+  # Z[j+1]<-z
+  # Z<-append(Z,x,j+1)
+  # z<-line_intersection(X[i],h(X[i]),x,h(x),X[i+1],h(X[i+1]),X[i+2],h(X[i+2]))
+  # W<-append(W,line_integral(X[i],h(X[i]),x,h(x),x,z),j+1)
+  # W<-append(W,line_integral(X[i+1],h(X[i+1]),X[i+2],h(X[i+2]),z,X[i+1]),j+2)
+  # Z<-append(Z,z,j+2)
+  # z<-line_intersection(x,h(x),X[i+1],h(X[i+1]),X[i+2],h(X[i+2]),X[i+3],h(X[i+3]))
+  # W[j+4]<-line_integral(x,h(x),X[i+1],h(X[i+1]),X[i+1],z)
+  # W[j+5]<-line_integral(X[i+2],h(X[i+2]),X[i+3],h(X[i+3]),z,X[i+2])
+  # Z[j+5]<-z
+  # X<-append(X,x,i)
+  # return(list(X=X,Z=Z,W=W))
+}
+
+ABC <- count_weights(X)
+Z<-ABC$Z
+W<-ABC$W
+AA<-ABC$A
+B<-ABC$B
+
+GIG<-function(X,Z,W,A,B){
+  x<-exp_simulate(Z,W,A,B)
+  alpha<-runif(1)
+  if(alpha<exp(minor(x,X)-major(x,X)))
+    return(list(value=x,X=X,Z=Z,W=W,A=A,B=B))
+  if(alpha<exp(h(x)-major(x,X)))
+    return(list(value=x,X=X,Z=Z,W=W,A=A,B=B))
+  CC<-add_point(x,X,Z,W,A,B)
+  GIG(CC$X,CC$Z,CC$W,CC$A,CC$B)
+  
+}
+
+GIG_sample<-function(n,X,Z,W,A,B){
+  S<-vector(length=n)
+  for(i in 1:n){
+    G<-GIG(X,Z,W,A,B)
+    S[i]<-GIG(X,Z,W,A,B)$v
+    X<-G$X
+    Z<-G$Z
+    W<-G$W
+    A<-G$A
+    B<-G$B
+  }
+  return(S)  
+}
+
+pGIG<-function(x) GeneralizedHyperbolic::pgig(x,b,a,lambda)
+dGIG<-function(x) GeneralizedHyperbolic::dgig(x,b,a,lambda)
+
+
+n=1000
+S<-GIG_sample(n,X,Z,W,AA,B)
+plot(ecdf(S))
+curve(pGIG,add=TRUE)
+
+plot(density(S),ylim=c(0,2))
+curve(dGIG,add=TRUE)
+
+m=100
+
+P<-vector()
+for(i in 1:m){
+  S[i]<-GIG_sample(n,X,Z,W,AA,B)
+  t<-ks.test(S,pGIG)
+  P[i]<-t$p.value
+  print(i)
+}
+print(ks.test(P,punif))

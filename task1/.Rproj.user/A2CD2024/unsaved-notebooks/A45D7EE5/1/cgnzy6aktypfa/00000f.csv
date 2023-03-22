@@ -1,0 +1,7 @@
+"0","library(numDeriv)"
+"0","library(ggplot2)"
+"0","p <- function(x, a = 1, b = 1, l = 2){(a/b)^(l/2)/(2*besselK(sqrt(a*b), l))*x^(l-1)*exp(-1/2*(a*x+b/x))}"
+"0",""
+"0","log_p <- function(x,  a = 1, b = 1, l = 2){"
+"0","  l/2*(log(a) - log(b)) - log(2*besselK(sqrt(a*b), l)) + (l-1)*log(x) - 1/2*(a*x + b/x)"
+"0","}"

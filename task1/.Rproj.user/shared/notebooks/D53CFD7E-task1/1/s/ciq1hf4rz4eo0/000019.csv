@@ -1,0 +1,2 @@
+"0","df %>% select(PRESTIGE, SUICIDE, INCOME, SCHOOL) %>% "
+"0","  ggpairs(diag=list(continuous = ""barDiag""))"

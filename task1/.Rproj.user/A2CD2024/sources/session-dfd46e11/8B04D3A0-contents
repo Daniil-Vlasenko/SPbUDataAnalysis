@@ -1,0 +1,190 @@
+---
+title: "task2"
+output: html_document
+date: "2023-03-06"
+---
+
+```{r, message=FALSE}
+library(pracma)
+library(ggplot2)
+library(RVCompare)
+library(dplyr)
+library(numDeriv)
+```
+
+
+Посмотрим на плотность.
+```{r}
+p <- function(x, a = 1, b = 1, l = 2){
+  (a/b)^(l/2)/(2*besselK(sqrt(a*b), l))*x^(l-1)*exp(-1/2*(a*x+b/x))
+  }
+
+log.p <- function(x,  a = 1, b = 1, l = 2){
+  l/2*(log(a) - log(b)) - log(2*besselK(sqrt(a*b), l)) + (l-1)*log(x) - 1/2*(a*x + b/x)
+}
+
+ggplot(data.frame(x=c(0.05,20)), aes(x)) +
+  stat_function(fun=p, geom="line")
+
+ggplot(data.frame(x=c(0.05,20)), aes(x)) +
+  stat_function(fun=log.p, geom="line")
+```
+
+Миноранта и мажоранта.
+```{r}
+xfixed <- seq(0.05, 20, length.out=20)
+yfixed <- log.p(xfixed)
+
+log.p.min <- function(x, xfixed, yfixed) {
+  if(x %in%  xfixed)
+    return(yfixed[match(x, xfixed)])
+  x.l <- max(xfixed[xfixed <= x])
+  x.r <- min(xfixed[xfixed > x])
+  id.l <- match(x.l, xfixed)
+  id.r <- match(x.r, xfixed)
+  y.l <- yfixed[id.l]
+  y.r <- yfixed[id.r]
+  return(((x.r - x) * y.l + (x - x.l) * y.r) / (x.r - x.l))
+}
+
+log.p.max <- function(x, xfixed, yfixed) {
+  if(x %in%  xfixed)
+    return(yfixed[match(x, xfixed)])
+  x.l <- max(xfixed[xfixed <= x])
+  x.r <- min(xfixed[xfixed > x])
+  id.l <- match(x.l, xfixed)
+  id.r <- match(x.r, xfixed)
+  y.l <- yfixed[id.l]
+  y.r <- yfixed[id.r]
+  x.ll <- xfixed[id.l - 1]
+  x.rr <- xfixed[id.r + 1]
+  y.ll <- yfixed[id.l - 1]
+  y.rr <- yfixed[id.r + 1]
+  if(id.l == 1) 
+    return(((x.rr - x) * y.r + (x - x.r) * y.rr) / (x.rr - x.r))
+  if(id.r == 20) 
+    return(((x.l - x) * y.ll + (x - x.ll) * y.l) / (x.l - x.ll))
+  return(min(((x.l - x) * y.ll + (x - x.ll) * y.l) / (x.l - x.ll),
+             ((x.rr - x) * y.r + (x - x.r) * y.rr) / (x.rr - x.r)))
+}
+```
+
+Изобразим миноранту и мажоранту.
+```{r, message=FALSE, warning=TRUE}
+log.p.min.plot <- function(x) {
+  sapply(x, log.p.min, xfixed, yfixed)
+}
+
+log.p.max.plot <- function(x) {
+  sapply(x, log.p.max, xfixed, yfixed)
+}
+
+ggplot(data.frame(x=c(0.05,20)), aes(x)) +
+  stat_function(fun=log.p, geom="line", aes(colour = "log.p")) +
+  stat_function(fun=log.p.min.plot, geom="line", aes(colour = "log.p.min")) +
+  stat_function(fun=log.p.max.plot, geom="line", aes(colour = "log.p.max")) +
+  scale_colour_manual("Function", values=c("black","green", "orange"), breaks=c("log.p","log.p.min", "log.p.max"))
+
+```
+
+Моделирование S^k.
+```{r}
+exp.log.p.max <- function(x, xfixed, yfixed) {
+  return(exp(log.p.max(x, xfixed, yfixed)))
+}
+exp.log.p.max.plot <- function(x) {
+  sapply(x, exp.log.p.max, xfixed, yfixed)
+}
+
+wfixed <- c()
+for(i in 1:(length(xfixed)-1)) {
+  wfixed <- c(wfixed, integrate(exp.log.p.max.plot, lower=xfixed[i], upper=xfixed[i + 1])$value)
+}
+wfixed.norm <- wfixed / sum(wfixed)
+
+S.k <- function(x) {
+  return(exp.log.p.max(x,  xfixed, yfixed) / sum(wfixed.norm))
+}
+
+# S.k.generate <- function(N) {
+#   sampleFromDensity(S.k, N, c(0.5, 20))
+# }
+
+S.k.generate <- function(N) {
+  w.id <- sample.int(n=length(wfixed.norm), size=N, replace=TRUE, prob=wfixed.norm)
+  alpha <- runif(N)
+  
+}
+# length(wfixed)
+# wfixed
+# sample.int(n=length(wfixed.norm), size=100, replace=TRUE, prob=wfixed.norm)
+```
+
+```{r}
+# ymin = 0
+# ymax = Inf
+
+zfix = function(yfixed) {
+    yf0 = head(yfixed, n=-1)
+    yf1 = tail(yfixed, n=-1)
+    zfixed = yf0 + (log.p(yf0) - log.p(yf1) + (yf1 - yf0)*numDeriv::grad(log.p,yf1)) / (numDeriv::grad(log.p,yf1) - numDeriv::grad(log.p,yf0))
+    return(zfixed)  
+}
+
+gplus.cdf = function(vals, yfixed) {
+  
+}
+```
+
+
+Моделирование исходного распределения.
+```{r}
+xi.generate.N <- function(N) {
+  rout <- numeric(N)
+  alpha <- numeric(N)
+  rejected <- 1:N
+  k <- N
+  while(k > 0) {
+    rout[rejected] <- S.k.generate(k)
+    alpha[rejected] <- runif(k)  
+    rejected <- rejected[alpha[rejected] >= exp(log.p.min.plot(rout[rejected]) - log.p.max.plot(rout[rejected]))]
+    k <- length(rejected)
+    if(k > 0) {
+      h <- log.p(rout[rejected])
+      rejected <- rejected[alpha[rejected] >= exp(h - log.p.max.plot(rout[rejected]))]
+      k <- length(rejected)
+    }
+    if(k > 0) {
+      xfixed <- sort(c(xfixed, rout[rejected]))
+      for(i in rout[rejected]) {
+        id <- match(i, xfixed)
+        yfixed <- append(yfixed, log.p(i), after=(id - 1))
+      }
+      wfixed <- c()
+      for(i in 1:(length(xfixed)-1)) {
+        wfixed <- c(wfixed, integrate(exp.log.p.max.plot, lower=xfixed[i], upper=xfixed[i + 1])$value)
+      }
+      wfixed.norm <- wfixed / sum(wfixed)
+    }
+  }
+  return(rout)
+}
+```
+
+Изобразим рузельтаты моделирования.
+```{r}
+sample <- xi.generate.N(10000)
+df<-data.frame(sample)
+
+
+ggplot(df, aes(x=sample)) +
+  geom_histogram(aes(y=..density..), position="identity", alpha=0.5)+
+  geom_density(alpha=0.6, aes(colour="estmate.p")) +
+  stat_function(fun=p, geom="line", aes(colour="p")) +
+  scale_colour_manual("Function", values=c("orange", "black"), breaks=c("estmate.p","p"))
+```
+
+
+
+
+

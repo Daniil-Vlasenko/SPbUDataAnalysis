@@ -1,6 +1,5 @@
-"0","library(lm.beta)"
 "0","model.st <- lm.beta(model)"
-"0","summary(model.s)"
+"0","summary(model.st)"
 "1","
 Call:
 "
