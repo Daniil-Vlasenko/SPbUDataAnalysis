@@ -1,8 +1,8 @@
 "0","library(lm.beta)"
 "0","dfNew.num <- dfNew %>% dplyr::select(-NAME) %>%"
 "0","  mutate(PRED_IND=as.numeric(PRED_IND), EXP_IND=as.numeric(EXP_IND), DANG_IND=as.numeric(DANG_IND))"
-"0","model = lm(LIFESPAN~., data=dfNew.num, na.action=""na.exclude"")"
-"0","summary(model)"
+"0","model1 = lm(LIFESPAN~., data=dfNew.num, na.action=""na.exclude"")"
+"0","summary(model1)"
 "1","
 Call:
 "

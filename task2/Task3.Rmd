@@ -174,15 +174,15 @@ data.frame(lapply(as.list(dfNew[2:8]), characteristics)) %>% t()
 library(lm.beta)
 dfNew.num <- dfNew %>% dplyr::select(-NAME) %>%
   mutate(PRED_IND=as.numeric(PRED_IND), EXP_IND=as.numeric(EXP_IND), DANG_IND=as.numeric(DANG_IND))
-model = lm(LIFESPAN~., data=dfNew.num, na.action="na.exclude")
-summary(model)
+model1 = lm(LIFESPAN~., data=dfNew.num, na.action="na.exclude")
+summary(model1)
 # residuals.lm(model)
 ```
 
 Сообщение "Coefficients: (1 not defined because of singularities)" говорит о том,
 что  в данные есть линейно зависиммые переменные. Узнаем какие это переменные.
 ```{r}
-alias(model)
+alias(model1)
 ```
 
 Логично, что время сна линейно зависит от времени в двух режимах сна. Давайте 
@@ -198,22 +198,22 @@ cor(x=dfNew.num %>%
 переменные независимыми. В нашем случаем нужно удалить SLEEP из модели. 
 Стандартизируем коэффициенты.
 ```{r}
-model = lm(LIFESPAN~BODY_WEI+BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND+DANG_IND, data=dfNew.num, na.action="na.exclude")
-model.beta <- lm.beta(model)
-summary(model.beta)
+model1 = lm(LIFESPAN~BODY_WEI+BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND+DANG_IND, data=dfNew.num, na.action="na.exclude")
+model1.beta <- lm.beta(model1)
+summary(model1.beta)
 ```
 Модель значима, p-value: 1.148e-06.
 Среди переменных значима только BRAIN_WE с уровнем значимости 0.05 и SLOWWAVE,
 PRED_IND с уровнем значимости 0.1.
 
-4\.
+4\. 
+
 5\. На примере SLOWWAV и PRED_IND построим доверительный эллипсоид между 
 (примерно поймем, как он выглядит) коэффициентами модели. Узнаем корреляции 
 между коэффициентами.
 ```{r}
-cov2cor(vcov(model))
+cov2cor(vcov(model1))
 ```
-
 
 Центр эллипсоида (0.27819, -0.54334), наклон главной диагонали эллипсоида -0.09454401.
 ```{r}
@@ -228,10 +228,67 @@ DrawEllipse(x=0.27819, y=-0.54334, radius.x=0.07, radius.y=0.03, rot=acos(-0.543
 Плохой случай, так как эллипс расположен в правой нижней плоскости и направлен 
 по y=-x, то есть коэффиценты могут быть близки к 0, то есть незначимы.
 
+6\.
 
+7, 8\. Уберем в ручную избыточные переменные. Вычислим Tolerance.
+[R - множественный коэффициент корреляции между признаком и всеми остальными 
+независимыми признаками; Tolerance = 1 + R^2; VIF = 1 / (1 + R^2) = 1 / Tolerance.]
 
+```{r, message=FALSE}
+library(olsrr)
+ols_vif_tol(model1)
+```
 
+Меньшее значние Tolerance у DANG_IND.
 
+Вычислим частные производные.
+[Zero Order - корреляция Пирсона между зависимым и независимым признаком; 
+Partial - частная корреляци; Part - получастная корреляция.]
+```{r}
+ols_correlations(model1)
+```
 
+Меньшая частная корреляция у DANG_IND. Удалим из модели DANG_IND.
+```{r}
+model2 = lm(LIFESPAN~BODY_WEI+BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND, 
+            data=dfNew.num, na.action="na.exclude")
+model2.beta <- lm.beta(model2)
+summary(model2.beta)
+```
 
+Модель все еще значима. Удалим еще признак.
+```{r}
+ols_vif_tol(model2)
+```
 
+```{r}
+ols_correlations(model2)
+```
+
+Удалим BODY_WEI из модели.
+```{r}
+model3 = lm(LIFESPAN~BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND, 
+            data=dfNew.num, na.action="na.exclude")
+model3.beta <- lm.beta(model3)
+summary(model3.beta)
+```
+
+Модель значима. Удалим еще признак.
+```{r}
+ols_vif_tol(model3)
+```
+
+```{r}
+ols_correlations(model2)
+```
+
+Удалим BODY_WEI из модели.
+```{r}
+model4 = lm(LIFESPAN~SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND, 
+            data=dfNew.num, na.action="na.exclude")
+model4.beta <- lm.beta(model4)
+summary(model4.beta)
+```
+
+9.\ Модель все еще значима. Лучше попробуем использовать автоматическое удаление 
+критериев.

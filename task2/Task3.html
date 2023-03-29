@@ -1639,6 +1639,347 @@ data.frame(lapply(as.list(dfNew[2:8]), characteristics)) %&gt;% t()</code></pre>
 </div>
 <div id="регрессионный-анализ-данных." class="section level1">
 <h1>Регрессионный анализ данных.</h1>
+<p>1. Выше.</p>
+<p>2,3. Будем исследовать зависимость продолжительности жизни (зависимая
+переменная) от остальных признаков (независиммые переменные).</p>
+<p>Построим линейную регрессионную модель и стандартизируем
+коэффициенты.</p>
+<pre class="r"><code>library(lm.beta)
+dfNew.num &lt;- dfNew %&gt;% dplyr::select(-NAME) %&gt;%
+  mutate(PRED_IND=as.numeric(PRED_IND), EXP_IND=as.numeric(EXP_IND), DANG_IND=as.numeric(DANG_IND))
+model1 = lm(LIFESPAN~., data=dfNew.num, na.action=&quot;na.exclude&quot;)
+summary(model1)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = LIFESPAN ~ ., data = dfNew.num, na.action = &quot;na.exclude&quot;)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1.19566 -0.33176 -0.05715  0.20963  1.25727 
+## 
+## Coefficients: (1 not defined because of singularities)
+##             Estimate Std. Error t value Pr(&gt;|t|)   
+## (Intercept)  1.87084    0.97812   1.913  0.06450 . 
+## BODY_WEI    -0.06537    0.11779  -0.555  0.58264   
+## BRAIN_WE     0.38759    0.14168   2.736  0.00994 **
+## SLOWWAVE     0.07371    0.03632   2.029  0.05054 . 
+## PARADOX     -0.16503    0.11375  -1.451  0.15626   
+## SLEEP             NA         NA      NA       NA   
+## GESTTIME    -0.14066    0.15619  -0.901  0.37435   
+## PRED_IND    -0.38165    0.21769  -1.753  0.08885 . 
+## EXP_IND      0.21513    0.13308   1.617  0.11550   
+## DANG_IND     0.18197    0.30394   0.599  0.55346   
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.557 on 33 degrees of freedom
+##   (20 observations deleted due to missingness)
+## Multiple R-squared:  0.7585, Adjusted R-squared:  0.6999 
+## F-statistic: 12.95 on 8 and 33 DF,  p-value: 3.2e-08</code></pre>
+<pre class="r"><code># residuals.lm(model)</code></pre>
+<p>Сообщение “Coefficients: (1 not defined because of singularities)”
+говорит о том, что в данные есть линейно зависиммые переменные. Узнаем
+какие это переменные.</p>
+<pre class="r"><code>alias(model1)</code></pre>
+<pre><code>## Model :
+## LIFESPAN ~ BODY_WEI + BRAIN_WE + SLOWWAVE + PARADOX + SLEEP + 
+##     GESTTIME + PRED_IND + EXP_IND + DANG_IND
+## 
+## Complete :
+##       (Intercept) BODY_WEI BRAIN_WE SLOWWAVE PARADOX GESTTIME PRED_IND EXP_IND
+## SLEEP 0           0        0        1        1       0        0        0      
+##       DANG_IND
+## SLEEP 0</code></pre>
+<p>Логично, что время сна линейно зависит от времени в двух режимах сна.
+Давайте еще посмотрим на матрицу корреляций.</p>
+<pre class="r"><code>cor(x=dfNew.num %&gt;% 
+      mutate(SLOWWAVE_PARADOX=SLOWWAVE+PARADOX),
+    use=&quot;pairwise.complete.obs&quot;) </code></pre>
+<pre><code>##                    BODY_WEI    BRAIN_WE   SLOWWAVE    PARADOX      SLEEP
+## BODY_WEI          1.0000000  0.95957476 -0.5841538 -0.2295718 -0.5328345
+## BRAIN_WE          0.9595748  1.00000000 -0.5737692 -0.3366790 -0.5625958
+## SLOWWAVE         -0.5841538 -0.57376921  1.0000000  0.5142539  0.9627147
+## PARADOX          -0.2295718 -0.33667895  0.5142539  1.0000000  0.7270870
+## SLEEP            -0.5328345 -0.56259577  0.9627147  0.7270870  1.0000000
+## LIFESPAN          0.7102336  0.79207017 -0.3662981 -0.4031934 -0.4299409
+## GESTTIME          0.7358200  0.79480024 -0.5637449 -0.5968043 -0.6636560
+## PRED_IND          0.1232505  0.08321878 -0.3181846 -0.4474705 -0.3958350
+## EXP_IND           0.6506388  0.63274384 -0.5437566 -0.5372245 -0.6422845
+## DANG_IND          0.3227124  0.28803574 -0.4838522 -0.5793365 -0.5877424
+## SLOWWAVE_PARADOX -0.5241171 -0.55366966  0.9627147  0.7270870  1.0000000
+##                     LIFESPAN   GESTTIME    PRED_IND    EXP_IND   DANG_IND
+## BODY_WEI          0.71023356  0.7358200  0.12325054  0.6506388  0.3227124
+## BRAIN_WE          0.79207017  0.7948002  0.08321878  0.6327438  0.2880357
+## SLOWWAVE         -0.36629806 -0.5637449 -0.31818462 -0.5437566 -0.4838522
+## PARADOX          -0.40319343 -0.5968043 -0.44747050 -0.5372245 -0.5793365
+## SLEEP            -0.42994087 -0.6636560 -0.39583497 -0.6422845 -0.5877424
+## LIFESPAN          1.00000000  0.6611694 -0.05168501  0.5215378  0.1548215
+## GESTTIME          0.66116939  1.0000000  0.15546799  0.6285366  0.3626848
+## PRED_IND         -0.05168501  0.1554680  1.00000000  0.6182460  0.9160424
+## EXP_IND           0.52153780  0.6285366  0.61824597  1.0000000  0.7872031
+## DANG_IND          0.15482147  0.3626848  0.91604245  0.7872031  1.0000000
+## SLOWWAVE_PARADOX -0.41361775 -0.6305837 -0.38656427 -0.5970194 -0.5634777
+##                  SLOWWAVE_PARADOX
+## BODY_WEI               -0.5241171
+## BRAIN_WE               -0.5536697
+## SLOWWAVE                0.9627147
+## PARADOX                 0.7270870
+## SLEEP                   1.0000000
+## LIFESPAN               -0.4136177
+## GESTTIME               -0.6305837
+## PRED_IND               -0.3865643
+## EXP_IND                -0.5970194
+## DANG_IND               -0.5634777
+## SLOWWAVE_PARADOX        1.0000000</code></pre>
+<p>Действительно, можно увидеть, что SLEEP линейно зависима с
+SLOWWAVE+PARADOX. Обрающаю внимание, что для использования lm.beta нужно
+сделать независимые переменные независимыми. В нашем случаем нужно
+удалить SLEEP из модели. Стандартизируем коэффициенты.</p>
+<pre class="r"><code>model1 = lm(LIFESPAN~BODY_WEI+BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND+DANG_IND, data=dfNew.num, na.action=&quot;na.exclude&quot;)
+model1.beta &lt;- lm.beta(model1)
+summary(model1.beta)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = LIFESPAN ~ BODY_WEI + BRAIN_WE + SLOWWAVE + PARADOX + 
+##     GESTTIME + PRED_IND + EXP_IND + DANG_IND, data = dfNew.num, 
+##     na.action = &quot;na.exclude&quot;)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1.19566 -0.33176 -0.05715  0.20963  1.25727 
+## 
+## Coefficients:
+##             Estimate Standardized Std. Error t value Pr(&gt;|t|)   
+## (Intercept)  1.87084           NA    0.97812   1.913  0.06450 . 
+## BODY_WEI    -0.06537     -0.19735    0.11779  -0.555  0.58264   
+## BRAIN_WE     0.38759      0.95582    0.14168   2.736  0.00994 **
+## SLOWWAVE     0.07371      0.27819    0.03632   2.029  0.05054 . 
+## PARADOX     -0.16503     -0.22542    0.11375  -1.451  0.15626   
+## GESTTIME    -0.14066     -0.14683    0.15619  -0.901  0.37435   
+## PRED_IND    -0.38165     -0.54334    0.21769  -1.753  0.08885 . 
+## EXP_IND      0.21513      0.32317    0.13308   1.617  0.11550   
+## DANG_IND     0.18197      0.24840    0.30394   0.599  0.55346   
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.557 on 33 degrees of freedom
+##   (20 observations deleted due to missingness)
+## Multiple R-squared:  0.7585, Adjusted R-squared:  0.6999 
+## F-statistic: 12.95 on 8 and 33 DF,  p-value: 3.2e-08</code></pre>
+<p>Модель значима, p-value: 1.148e-06. Среди переменных значима только
+BRAIN_WE с уровнем значимости 0.05 и SLOWWAVE, PRED_IND с уровнем
+значимости 0.1.</p>
+<p>4.</p>
+<p>5. На примере SLOWWAV и PRED_IND построим доверительный эллипсоид
+между (примерно поймем, как он выглядит) коэффициентами модели. Узнаем
+корреляции между коэффициентами.</p>
+<pre class="r"><code>cov2cor(vcov(model1))</code></pre>
+<pre><code>##             (Intercept)    BODY_WEI    BRAIN_WE    SLOWWAVE    PARADOX
+## (Intercept)   1.0000000  0.36292673 -0.27900908 -0.35112986 -0.6563229
+## BODY_WEI      0.3629267  1.00000000 -0.87988931  0.29792423 -0.5125910
+## BRAIN_WE     -0.2790091 -0.87988931  1.00000000 -0.09153866  0.3755251
+## SLOWWAVE     -0.3511299  0.29792423 -0.09153866  1.00000000 -0.2120343
+## PARADOX      -0.6563229 -0.51259099  0.37552513 -0.21203430  1.0000000
+## GESTTIME     -0.7302797  0.01617921 -0.24907265  0.05632126  0.3909565
+## PRED_IND      0.1333150  0.20767206 -0.12820924 -0.09454401 -0.3510262
+## EXP_IND       0.2727767 -0.09916169 -0.08183571 -0.18696665 -0.1516569
+## DANG_IND     -0.3837625 -0.24435745  0.22977833  0.19634496  0.4887023
+##                GESTTIME    PRED_IND     EXP_IND   DANG_IND
+## (Intercept) -0.73027972  0.13331502  0.27277666 -0.3837625
+## BODY_WEI     0.01617921  0.20767206 -0.09916169 -0.2443575
+## BRAIN_WE    -0.24907265 -0.12820924 -0.08183571  0.2297783
+## SLOWWAVE     0.05632126 -0.09454401 -0.18696665  0.1963450
+## PARADOX      0.39095649 -0.35102623 -0.15165689  0.4887023
+## GESTTIME     1.00000000  0.04961529 -0.23412132  0.0818810
+## PRED_IND     0.04961529  1.00000000  0.19688462 -0.8950909
+## EXP_IND     -0.23412132  0.19688462  1.00000000 -0.5053549
+## DANG_IND     0.08188100 -0.89509087 -0.50535485  1.0000000</code></pre>
+<p>Центр эллипсоида (0.27819, -0.54334), наклон главной диагонали
+эллипсоида -0.09454401.</p>
+<pre class="r"><code>library(DescTools)
+
+tmp &lt;- data_frame(SLOWWAV=c(0.27819), PRED_IND=c(-0.54334))</code></pre>
+<pre><code>## Warning: `data_frame()` was deprecated in tibble 1.1.0.
+## Please use `tibble()` instead.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was generated.</code></pre>
+<pre class="r"><code>plot(tmp)
+DrawEllipse(x=0.27819, y=-0.54334, radius.x=0.07, radius.y=0.03, rot=acos(-0.54334))</code></pre>
+<p><img src="data:image/png;base64,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" width="672" /></p>
+<p>Плохой случай, так как эллипс расположен в правой нижней плоскости и
+направлен по y=-x, то есть коэффиценты могут быть близки к 0, то есть
+незначимы.</p>
+<p>6.</p>
+<p>7, 8. Уберем в ручную избыточные переменные. Вычислим Tolerance. [R -
+множественный коэффициент корреляции между признаком и всеми остальными
+независимыми признаками; Tolerance = 1 + R^2; VIF = 1 / (1 + R^2) = 1 /
+Tolerance.]</p>
+<pre class="r"><code>library(olsrr)
+ols_vif_tol(model1)</code></pre>
+<pre><code>##   Variables  Tolerance       VIF
+## 1  BODY_WEI 0.05788582 17.275387
+## 2  BRAIN_WE 0.05995786 16.678381
+## 3  SLOWWAVE 0.38952116  2.567255
+## 4   PARADOX 0.30321549  3.297985
+## 5  GESTTIME 0.27535660  3.631654
+## 6  PRED_IND 0.07620783 13.122011
+## 7   EXP_IND 0.18314774  5.460073
+## 8  DANG_IND 0.04252106 23.517757</code></pre>
+<p>Меньшее значние Tolerance у DANG_IND.</p>
+<p>Вычислим частные производные. [Zero Order - корреляция Пирсона между
+зависимым и независимым признаком; Partial - частная корреляци; Part -
+получастная корреляция.]</p>
+<pre class="r"><code>ols_correlations(model1)</code></pre>
+<pre><code>##                Correlations                 
+## -------------------------------------------
+## Variable    Zero Order    Partial     Part  
+## -------------------------------------------
+## BODY_WEI         0.708     -0.096    -0.047 
+## BRAIN_WE         0.792      0.430     0.234 
+## SLOWWAVE        -0.355      0.333     0.174 
+## PARADOX         -0.385     -0.245    -0.124 
+## GESTTIME         0.642     -0.155    -0.077 
+## PRED_IND        -0.090     -0.292    -0.150 
+## EXP_IND          0.504      0.271     0.138 
+## DANG_IND         0.141      0.104     0.051 
+## -------------------------------------------</code></pre>
+<p>Меньшая частная корреляция у DANG_IND. Удалим из модели DANG_IND.</p>
+<pre class="r"><code>model2 = lm(LIFESPAN~BODY_WEI+BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND, 
+            data=dfNew.num, na.action=&quot;na.exclude&quot;)
+model2.beta &lt;- lm.beta(model2)
+summary(model2.beta)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = LIFESPAN ~ BODY_WEI + BRAIN_WE + SLOWWAVE + PARADOX + 
+##     GESTTIME + PRED_IND + EXP_IND, data = dfNew.num, na.action = &quot;na.exclude&quot;)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1.25789 -0.34940 -0.05119  0.18697  1.32360 
+## 
+## Coefficients:
+##             Estimate Standardized Std. Error t value Pr(&gt;|t|)   
+## (Intercept)  2.09558           NA    0.89467   2.342  0.02516 * 
+## BODY_WEI    -0.04814     -0.14533    0.11314  -0.426  0.67315   
+## BRAIN_WE     0.36810      0.90776    0.13658   2.695  0.01086 * 
+## SLOWWAVE     0.06944      0.26208    0.03528   1.968  0.05721 . 
+## PARADOX     -0.19831     -0.27087    0.09830  -2.017  0.05160 . 
+## GESTTIME    -0.14831     -0.15482    0.15419  -0.962  0.34289   
+## PRED_IND    -0.26499     -0.37726    0.09614  -2.756  0.00933 **
+## EXP_IND      0.25540      0.38365    0.11375   2.245  0.03136 * 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.5517 on 34 degrees of freedom
+##   (20 observations deleted due to missingness)
+## Multiple R-squared:  0.7558, Adjusted R-squared:  0.7056 
+## F-statistic: 15.04 on 7 and 34 DF,  p-value: 9.257e-09</code></pre>
+<p>Модель все еще значима. Удалим еще признак.</p>
+<pre class="r"><code>ols_vif_tol(model2)</code></pre>
+<pre><code>##   Variables  Tolerance       VIF
+## 1  BODY_WEI 0.06156171 16.243864
+## 2  BRAIN_WE 0.06329998 15.797794
+## 3  SLOWWAVE 0.40513985  2.468283
+## 4   PARADOX 0.39835447  2.510327
+## 5  GESTTIME 0.27721519  3.607306
+## 6  PRED_IND 0.38331540  2.608818
+## 7   EXP_IND 0.24596251  4.065660</code></pre>
+<pre class="r"><code>ols_correlations(model2)</code></pre>
+<pre><code>##                Correlations                 
+## -------------------------------------------
+## Variable    Zero Order    Partial     Part  
+## -------------------------------------------
+## BODY_WEI         0.708     -0.073    -0.036 
+## BRAIN_WE         0.792      0.420     0.228 
+## SLOWWAVE        -0.355      0.320     0.167 
+## PARADOX         -0.385     -0.327    -0.171 
+## GESTTIME         0.642     -0.163    -0.082 
+## PRED_IND        -0.090     -0.427    -0.234 
+## EXP_IND          0.504      0.359     0.190 
+## -------------------------------------------</code></pre>
+<p>Удалим BODY_WEI из модели.</p>
+<pre class="r"><code>model3 = lm(LIFESPAN~BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND, 
+            data=dfNew.num, na.action=&quot;na.exclude&quot;)
+model3.beta &lt;- lm.beta(model3)
+summary(model3.beta)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = LIFESPAN ~ BRAIN_WE + SLOWWAVE + PARADOX + GESTTIME + 
+##     PRED_IND + EXP_IND, data = dfNew.num, na.action = &quot;na.exclude&quot;)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1.21893 -0.33734 -0.04795  0.16878  1.32442 
+## 
+## Coefficients:
+##             Estimate Standardized Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  2.21001           NA    0.84325   2.621  0.01289 *  
+## BRAIN_WE     0.31737      0.78266    0.06587   4.818 2.77e-05 ***
+## SLOWWAVE     0.07490      0.28269    0.03247   2.307  0.02711 *  
+## PARADOX     -0.21775     -0.29743    0.08601  -2.532  0.01600 *  
+## GESTTIME    -0.14586     -0.15225    0.15227  -0.958  0.34468    
+## PRED_IND    -0.26604     -0.37875    0.09498  -2.801  0.00824 ** 
+## EXP_IND      0.24252      0.36431    0.10836   2.238  0.03167 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.5452 on 35 degrees of freedom
+##   (20 observations deleted due to missingness)
+## Multiple R-squared:  0.7545, Adjusted R-squared:  0.7125 
+## F-statistic: 17.93 on 6 and 35 DF,  p-value: 2.247e-09</code></pre>
+<p>Модель значима. Удалим еще признак.</p>
+<pre class="r"><code>ols_vif_tol(model3)</code></pre>
+<pre><code>##   Variables Tolerance      VIF
+## 1  BRAIN_WE 0.2658145 3.762022
+## 2  SLOWWAVE 0.4669386 2.141609
+## 3   PARADOX 0.5080956 1.968134
+## 4  GESTTIME 0.2776044 3.602248
+## 5  PRED_IND 0.3835659 2.607114
+## 6   EXP_IND 0.2647042 3.777802</code></pre>
+<pre class="r"><code>ols_correlations(model2)</code></pre>
+<pre><code>##                Correlations                 
+## -------------------------------------------
+## Variable    Zero Order    Partial     Part  
+## -------------------------------------------
+## BODY_WEI         0.708     -0.073    -0.036 
+## BRAIN_WE         0.792      0.420     0.228 
+## SLOWWAVE        -0.355      0.320     0.167 
+## PARADOX         -0.385     -0.327    -0.171 
+## GESTTIME         0.642     -0.163    -0.082 
+## PRED_IND        -0.090     -0.427    -0.234 
+## EXP_IND          0.504      0.359     0.190 
+## -------------------------------------------</code></pre>
+<p>Удалим BODY_WEI из модели.</p>
+<pre class="r"><code>model4 = lm(LIFESPAN~SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND, 
+            data=dfNew.num, na.action=&quot;na.exclude&quot;)
+model4.beta &lt;- lm.beta(model4)
+summary(model4.beta)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = LIFESPAN ~ SLOWWAVE + PARADOX + GESTTIME + PRED_IND + 
+##     EXP_IND, data = dfNew.num, na.action = &quot;na.exclude&quot;)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1.32571 -0.37678 -0.07265  0.38282  1.70616 
+## 
+## Coefficients:
+##             Estimate Standardized Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  1.77327           NA    1.06612   1.663 0.104938    
+## SLOWWAVE     0.01489      0.05620    0.03813   0.390 0.698487    
+## PARADOX     -0.12601     -0.17213    0.10667  -1.181 0.245191    
+## GESTTIME     0.22049      0.23016    0.16777   1.314 0.197070    
+## PRED_IND    -0.41258     -0.58737    0.11442  -3.606 0.000936 ***
+## EXP_IND      0.45499      0.68348    0.12587   3.615 0.000912 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.6933 on 36 degrees of freedom
+##   (20 observations deleted due to missingness)
+## Multiple R-squared:  0.5917, Adjusted R-squared:  0.535 
+## F-statistic: 10.43 on 5 and 36 DF,  p-value: 3.034e-06</code></pre>
+<p>9. Модель все еще значима. Лучше попробуем использовать
+автоматическое удаление критериев.</p>
 </div>
 
 

@@ -1,6 +1,6 @@
-"0","model = lm(LIFESPAN~BODY_WEI+BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND+DANG_IND, data=dfNew.num, na.action=""na.exclude"")"
-"0","model.beta <- lm.beta(model)"
-"0","summary(model.beta)"
+"0","model1 = lm(LIFESPAN~BODY_WEI+BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND+DANG_IND, data=dfNew.num, na.action=""na.exclude"")"
+"0","model1.beta <- lm.beta(model1)"
+"0","summary(model1.beta)"
 "1","
 Call:
 "

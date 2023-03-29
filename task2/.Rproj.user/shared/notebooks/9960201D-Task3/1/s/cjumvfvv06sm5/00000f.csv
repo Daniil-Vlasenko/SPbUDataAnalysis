@@ -1,4 +1,4 @@
-"0","cov2cor(vcov(model))"
+"0","cov2cor(vcov(model1))"
 "1","           "
 "1"," (Intercept)"
 "1","    BODY_WEI"
