@@ -1,0 +1,4 @@
+"0","library(DescTools)"
+"0",""
+"0","tmp <- data_frame(SLOWWAV=c(0.27819), PRED_IND=c(-0.54334))"
+"0","plot(tmp)"

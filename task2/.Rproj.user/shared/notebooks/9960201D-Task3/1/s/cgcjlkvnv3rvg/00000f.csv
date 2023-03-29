@@ -1,5 +1,5 @@
 "0","cor(x=dfNew.num %>% "
-"0","      mutate(PRED_IND=as.numeric(PRED_IND), EXP_IND=as.numeric(EXP_IND), DANG_IND=as.numeric(DANG_IND), SLOWWAVE_PARADOX=SLOWWAVE+PARADOX),"
+"0","      mutate(SLOWWAVE_PARADOX=SLOWWAVE+PARADOX),"
 "0","    use=""pairwise.complete.obs"") "
 "1","                "
 "1","   BODY_WEI"

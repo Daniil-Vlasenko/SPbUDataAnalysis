@@ -164,13 +164,16 @@ data.frame(lapply(as.list(dfNew[2:8]), characteristics)) %>% t()
 ```
 
 # Регрессионный анализ данных.
-Будем исследовать зависимость продолжительности жизни (зависимая переменная) от
+1\. Выше.
+
+2,3\. Будем исследовать зависимость продолжительности жизни (зависимая переменная) от
 остальных признаков (независиммые переменные).
 
 Построим линейную регрессионную модель и стандартизируем коэффициенты.
 ```{r}
 library(lm.beta)
-dfNew.num <- dfNew %>% dplyr::select(-NAME)
+dfNew.num <- dfNew %>% dplyr::select(-NAME) %>%
+  mutate(PRED_IND=as.numeric(PRED_IND), EXP_IND=as.numeric(EXP_IND), DANG_IND=as.numeric(DANG_IND))
 model = lm(LIFESPAN~., data=dfNew.num, na.action="na.exclude")
 summary(model)
 # residuals.lm(model)
@@ -186,7 +189,7 @@ alias(model)
 еще посмотрим на матрицу корреляций.
 ```{r}
 cor(x=dfNew.num %>% 
-      mutate(PRED_IND=as.numeric(PRED_IND), EXP_IND=as.numeric(EXP_IND), DANG_IND=as.numeric(DANG_IND), SLOWWAVE_PARADOX=SLOWWAVE+PARADOX),
+      mutate(SLOWWAVE_PARADOX=SLOWWAVE+PARADOX),
     use="pairwise.complete.obs") 
 ```
 
@@ -199,4 +202,36 @@ model = lm(LIFESPAN~BODY_WEI+BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND
 model.beta <- lm.beta(model)
 summary(model.beta)
 ```
+Модель значима, p-value: 1.148e-06.
+Среди переменных значима только BRAIN_WE с уровнем значимости 0.05 и SLOWWAVE,
+PRED_IND с уровнем значимости 0.1.
+
+4\.
+5\. На примере SLOWWAV и PRED_IND построим доверительный эллипсоид между 
+(примерно поймем, как он выглядит) коэффициентами модели. Узнаем корреляции 
+между коэффициентами.
+```{r}
+cov2cor(vcov(model))
+```
+
+
+Центр эллипсоида (0.27819, -0.54334), наклон главной диагонали эллипсоида -0.09454401.
+```{r}
+library(DescTools)
+
+tmp <- data_frame(SLOWWAV=c(0.27819), PRED_IND=c(-0.54334))
+plot(tmp)
+DrawEllipse(x=0.27819, y=-0.54334, radius.x=0.07, radius.y=0.03, rot=acos(-0.54334))
+
+```
+
+Плохой случай, так как эллипс расположен в правой нижней плоскости и направлен 
+по y=-x, то есть коэффиценты могут быть близки к 0, то есть незначимы.
+
+
+
+
+
+
+
 
