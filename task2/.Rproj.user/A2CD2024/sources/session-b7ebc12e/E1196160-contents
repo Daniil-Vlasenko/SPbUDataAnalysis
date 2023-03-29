@@ -169,6 +169,7 @@ data.frame(lapply(as.list(dfNew[2:8]), characteristics)) %>% t()
 
 Построим линейную регрессионную модель и стандартизируем коэффициенты.
 ```{r}
+library(lm.beta)
 dfNew.num <- dfNew %>% dplyr::select(-NAME)
 model = lm(LIFESPAN~., data=dfNew.num, na.action="na.exclude")
 summary(model)
@@ -189,4 +190,13 @@ cor(x=dfNew.num %>%
     use="pairwise.complete.obs") 
 ```
 
-Действительно, можно увидеть, что SLEEP линейно зависим с SLOWWAVE+PARADOX.
+Действительно, можно увидеть, что SLEEP линейно зависима с SLOWWAVE+PARADOX.
+Обрающаю внимание, что для использования lm.beta нужно сделать независимые 
+переменные независимыми. В нашем случаем нужно удалить SLEEP из модели. 
+Стандартизируем коэффициенты.
+```{r}
+model = lm(LIFESPAN~BODY_WEI+BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND+DANG_IND, data=dfNew.num, na.action="na.exclude")
+model.beta <- lm.beta(model)
+summary(model.beta)
+```
+

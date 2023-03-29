@@ -1,3 +1,4 @@
+"0","library(lm.beta)"
 "0","dfNew.num <- dfNew %>% dplyr::select(-NAME)"
 "0","model = lm(LIFESPAN~., data=dfNew.num, na.action=""na.exclude"")"
 "0","summary(model)"
