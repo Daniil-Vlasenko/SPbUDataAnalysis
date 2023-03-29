@@ -139,7 +139,7 @@ dfNew %>% dplyr::select(-NAME) %>%
 
 ## {.unlisted .unnumbered}
 
-7\. Аутлайнеров нет.
+7\. Аутлайеров нет.
 
 8\. Неоднородности нет.
 
@@ -292,3 +292,26 @@ summary(model4.beta)
 
 9.\ Модель все еще значима. Лучше попробуем использовать автоматическое удаление 
 критериев.
+
+Проведем backward AIC.
+```{r}
+library(MASS)
+model1.AIC <- lm(LIFESPAN~BODY_WEI+BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND+DANG_IND, 
+                data=na.omit(dfNew.num))
+stepAIC(model1.AIC, direction="backward")
+```
+
+Проведем forward AIC.
+```{r}
+model2.AIC <- lm(LIFESPAN~1, data=na.omit(dfNew.num))
+stepAIC(model2.AIC, direction="forward", scope=list(upper=model1.AIC,lower=model2.AIC))
+```
+
+Проведем both side AIC.
+```{r}
+stepAIC(model.AIC, direction="both")
+```
+
+Все три разных AIC приводят к одинаковому результату.
+
+

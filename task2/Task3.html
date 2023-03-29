@@ -1980,6 +1980,78 @@ summary(model4.beta)</code></pre>
 ## F-statistic: 10.43 on 5 and 36 DF,  p-value: 3.034e-06</code></pre>
 <p>9. Модель все еще значима. Лучше попробуем использовать
 автоматическое удаление критериев.</p>
+<pre class="r"><code>library(MASS)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;MASS&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:olsrr&#39;:
+## 
+##     cement</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     select</code></pre>
+<pre class="r"><code>model.AIC &lt;- lm(LIFESPAN~BODY_WEI+BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND+DANG_IND, 
+                data=na.omit(dfNew.num))
+stepAIC(model.AIC, direction=&quot;backward&quot;)</code></pre>
+<pre><code>## Start:  AIC=-41.29
+## LIFESPAN ~ BODY_WEI + BRAIN_WE + SLOWWAVE + PARADOX + GESTTIME + 
+##     PRED_IND + EXP_IND + DANG_IND
+## 
+##            Df Sum of Sq    RSS     AIC
+## - BODY_WEI  1   0.09556 10.333 -42.897
+## - DANG_IND  1   0.11120 10.349 -42.834
+## - GESTTIME  1   0.25160 10.489 -42.268
+## &lt;none&gt;                  10.238 -41.287
+## - PARADOX   1   0.65302 10.891 -40.690
+## - EXP_IND   1   0.81071 11.048 -40.086
+## - PRED_IND  1   0.95357 11.191 -39.547
+## - SLOWWAVE  1   1.27772 11.515 -38.348
+## - BRAIN_WE  1   2.32171 12.559 -34.703
+## 
+## Step:  AIC=-42.9
+## LIFESPAN ~ BRAIN_WE + SLOWWAVE + PARADOX + GESTTIME + PRED_IND + 
+##     EXP_IND + DANG_IND
+## 
+##            Df Sum of Sq    RSS     AIC
+## - DANG_IND  1    0.0708 10.404 -44.610
+## - GESTTIME  1    0.2467 10.580 -43.906
+## &lt;none&gt;                  10.333 -42.897
+## - EXP_IND   1    0.7640 11.097 -41.901
+## - PRED_IND  1    0.8698 11.203 -41.503
+## - PARADOX   1    1.2672 11.600 -40.039
+## - SLOWWAVE  1    1.6400 11.973 -38.710
+## - BRAIN_WE  1    6.9391 17.272 -23.320
+## 
+## Step:  AIC=-44.61
+## LIFESPAN ~ BRAIN_WE + SLOWWAVE + PARADOX + GESTTIME + PRED_IND + 
+##     EXP_IND
+## 
+##            Df Sum of Sq    RSS     AIC
+## - GESTTIME  1    0.2728 10.677 -45.524
+## &lt;none&gt;                  10.404 -44.610
+## - EXP_IND   1    1.4890 11.893 -40.992
+## - SLOWWAVE  1    1.5816 11.986 -40.667
+## - PARADOX   1    1.9051 12.309 -39.548
+## - PRED_IND  1    2.3321 12.736 -38.116
+## - BRAIN_WE  1    6.9013 17.305 -25.240
+## 
+## Step:  AIC=-45.52
+## LIFESPAN ~ BRAIN_WE + SLOWWAVE + PARADOX + PRED_IND + EXP_IND
+## 
+##            Df Sum of Sq    RSS     AIC
+## &lt;none&gt;                  10.677 -45.524
+## - EXP_IND   1    1.2825 11.959 -42.759
+## - SLOWWAVE  1    1.6221 12.299 -41.583
+## - PARADOX   1    1.6557 12.332 -41.469
+## - PRED_IND  1    2.0698 12.746 -40.082
+## - BRAIN_WE  1    7.4588 18.136 -25.271</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = LIFESPAN ~ BRAIN_WE + SLOWWAVE + PARADOX + PRED_IND + 
+##     EXP_IND, data = na.omit(dfNew.num))
+## 
+## Coefficients:
+## (Intercept)     BRAIN_WE     SLOWWAVE      PARADOX     PRED_IND      EXP_IND  
+##     1.55691      0.28587      0.07582     -0.17854     -0.24076      0.21944</code></pre>
 </div>
 
 
