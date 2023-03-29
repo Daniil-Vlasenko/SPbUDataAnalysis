@@ -1,0 +1,4 @@
+"0","t.tests <- function(x, y) {"
+"0","  c(Two.sample.t.test = t.test(x, y, var.equal=TRUE)$p.value,"
+"0","    Welch.two.sample.t.test = t.test(x, y, var.equal=FALSE)$p.value)"
+"0","}"

@@ -1,0 +1,5 @@
+"0","wilcox.test(dfNew1$BODY_WEI, dfNew5$BODY_WEI, paired=FALSE)$p.value"
+"1","[1]"
+"1"," 2.183504e-05"
+"1","
+"

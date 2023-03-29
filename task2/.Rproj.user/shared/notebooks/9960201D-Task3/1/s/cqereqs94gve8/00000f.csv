@@ -1,0 +1,8 @@
+"0","ggplot(dfMelt, aes(x = value)) +"
+"0","        stat_ecdf() +"
+"0","        facet_wrap(~variable, scales = ""free"") +"
+"0","        labs(x = """", y = """") +"
+"0","        geom_line(aes(y = pnorm(value,"
+"0","                      mean = tapply(value, variable, mean, na.rm = TRUE)[PANEL],"
+"0","                      sd = tapply(value, variable, sd, na.rm = TRUE)[PANEL]"
+"0","                      )), color = ""blue"")"

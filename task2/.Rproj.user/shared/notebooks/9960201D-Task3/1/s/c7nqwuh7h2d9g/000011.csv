@@ -1,0 +1,4 @@
+"0","ggplot(dfNew1, aes(sample = SLEEP)) +"
+"0","        stat_qq_point(size = 1) +"
+"0","        labs(x = """", y = """") +"
+"0","        stat_qq_line(color = ""blue"")"

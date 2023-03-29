@@ -1,0 +1,5 @@
+"0","var.tests <- function(x, y) {"
+"0","  c(Fisher = round(var.test(x, y)$p.value, 5),"
+"0","    Levene = round(t.test(abs(x - mean(x, na.rm = TRUE)), "
+"0","                          abs(y - mean(y, na.rm = TRUE)))$p.value, 5))"
+"0","}"

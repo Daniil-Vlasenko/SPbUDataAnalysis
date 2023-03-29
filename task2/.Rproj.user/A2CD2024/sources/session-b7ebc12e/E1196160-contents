@@ -1,0 +1,192 @@
+---
+title: "Task3"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+date: "2022-11-11"
+---
+
+
+# Предварительный анализ данных. 
+1\. Описание признаков присутствует в сопроводительном файле. Прочитаем данные. 
+Среди данных не может быть отрицательных значений, NA обозначаются как -999.
+
+```{r, message=FALSE, warning=FALSE}
+library(readxl)
+library(dplyr)
+library(tidyr)
+```
+
+```{r, message=FALSE, warning=FALSE}
+df <- read_excel("Sleep/SLEEP_shortname.xls")
+df[df < 0] <- NA
+
+head(df)
+```
+
+Количество строк в таблице.
+
+```{r}
+nrow(df)
+```
+
+2\. Признаков немного, поэтому рассматривать будем все.
+
+3\. Кроме индексов-факторов, все признаки количественные. Индексы - порядковые признаки.
+Все количественные признаки непрерывные, но можно заметить дискретизацию при округлении.
+Проверим это, посмотрев на частоты мод и повторов.
+
+```{r}
+mode_rate <- function(x) {
+  x <- x[!is.na(x)]
+  u <- unique(x)
+  tab <- tabulate(match(x, u))
+  max(tab) / length(x)
+}
+
+repeat_rate <- function(x) {
+  x <- x[!is.na(x)]
+  u <- unique(x)
+  (length(x) - length(u)) / length(x)
+}
+```
+
+Отношение частоты моды к числу элементов.
+
+```{r}
+df %>% summarise(BODY_WEI = round(mode_rate(BODY_WEI), 3), BRAIN_WE = round(mode_rate(BRAIN_WE), 3), 
+                SLOWWAVE = round(mode_rate(SLOWWAVE), 3), PARADOX = round(mode_rate(PARADOX), 3), 
+                SLEEP = round(mode_rate(SLEEP), 3), LIFESPAN = round(mode_rate(LIFESPAN), 3), 
+                GESTTIME = round(mode_rate(GESTTIME), 3))
+```
+
+Отношение частоты повторных элементов к числу элементов.
+
+```{r}
+df %>% summarise(BODY_WEI = round(repeat_rate(BODY_WEI), 3), BRAIN_WE = round(repeat_rate(BRAIN_WE), 3), 
+                SLOWWAVE = round(repeat_rate(SLOWWAVE), 3), PARADOX = round(repeat_rate(PARADOX), 3), 
+                SLEEP = round(repeat_rate(SLEEP), 3), LIFESPAN = round(repeat_rate(LIFESPAN), 3), 
+                GESTTIME = round(repeat_rate(GESTTIME), 3))
+```
+
+Будем считать данные дискретными, если отношение частоты моды к числу элементов 
+больше 10%, а отношение частоты повторных элементов к числу элементов больше 15%.
+Тогда BODY_WEI, BRAIN_WE будут непрерывными, а BRAIN_WE, PARADOX, SLEEP, LIFESPAN, 
+GESTTIME дискретными.
+
+4\. Не актуально для текущих данных.
+
+5\. Посмотрим на данные.
+
+```{r, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(GGally)
+```
+
+```{r, message=FALSE, warning=FALSE}
+df %>% dplyr::select(-NAME) %>%
+  ggpairs(diag=list(continuous = "barDiag"), 
+          columns = c("BODY_WEI", "BRAIN_WE", "SLOWWAVE", "PARADOX", "SLEEP", "LIFESPAN", "GESTTIME"))
+```
+
+6\. Преобразуем данные. Логарифмируем данные, чтобы было легче наблюдать корреляции 
+(выше заметны сильно отличающиеся индивиды, это слоны) и получить нормыльные 
+распределения признаков. Факторизуем индексы.
+
+```{r}
+dfNew <- df %>% mutate(PRED_IND = as.factor(PRED_IND), EXP_IND = as.factor(EXP_IND),
+                   DANG_IND = as.factor(DANG_IND), 
+                   BODY_WEI = log(BODY_WEI), BRAIN_WE = log(BRAIN_WE), 
+                   LIFESPAN = log(LIFESPAN), GESTTIME = log(GESTTIME))
+```
+
+Посмотрим на новые данные. Сгруппируем индивидов по факторам.
+
+## {.tabset .unlisted .unnumbered}
+
+### No factorization
+
+```{r, message=FALSE, warning=FALSE}
+dfNew %>% dplyr::select(-NAME) %>%
+  ggpairs(diag=list(continuous = "barDiag"), 
+          columns = c("BODY_WEI", "BRAIN_WE", "SLOWWAVE", "PARADOX", "SLEEP", "LIFESPAN", "GESTTIME"))
+```
+
+### PRED_IND
+
+```{r, message=FALSE, warning=FALSE}
+dfNew %>% dplyr::select(-NAME) %>%
+  ggpairs(diag=list(continuous = "barDiag"), aes(colour=PRED_IND), legend=1,
+          columns=c("BODY_WEI", "BRAIN_WE", "SLOWWAVE", "PARADOX", "SLEEP", "LIFESPAN", "GESTTIME"))
+```
+
+### EXP_IND
+
+```{r, message=FALSE, warning=FALSE}
+dfNew %>% dplyr::select(-NAME) %>%
+  ggpairs(diag=list(continuous = "barDiag"), aes(colour=EXP_IND), legend=1,
+          columns=c("BODY_WEI", "BRAIN_WE", "SLOWWAVE", "PARADOX", "SLEEP", "LIFESPAN", "GESTTIME"))
+```
+
+### DANG_IND
+
+```{r, message=FALSE, warning=FALSE}
+dfNew %>% dplyr::select(-NAME) %>%
+  ggpairs(diag=list(continuous = "barDiag"), aes(colour=DANG_IND), legend=1,
+          columns=c("BODY_WEI", "BRAIN_WE", "SLOWWAVE", "PARADOX", "SLEEP", "LIFESPAN", "GESTTIME"))
+```
+
+## {.unlisted .unnumbered}
+
+7\. Аутлайнеров нет.
+
+8\. Неоднородности нет.
+
+9\. Не актуально для текущих данных.
+
+10\. Используем описательные статистики для распределений признаков в новой выборке.
+
+```{r}
+library(moments)
+```
+
+```{r}
+characteristics <- function(x) {
+  c(mean = round(mean(x, na.rm = TRUE), 3),
+    median = round(median(x, na.rm = TRUE), 3),
+    var = round(var(x, na.rm = TRUE), 3),
+    skewness = round(skewness(x, na.rm = TRUE), 3),
+    kurtosis = round(kurtosis(x, na.rm = TRUE) - 3, 3))
+}
+
+data.frame(lapply(as.list(dfNew[2:8]), characteristics)) %>% t()
+```
+
+# Регрессионный анализ данных.
+Будем исследовать зависимость продолжительности жизни (зависимая переменная) от
+остальных признаков (независиммые переменные).
+
+Построим линейную регрессионную модель и стандартизируем коэффициенты.
+```{r}
+dfNew.num <- dfNew %>% dplyr::select(-NAME)
+model = lm(LIFESPAN~., data=dfNew.num, na.action="na.exclude")
+summary(model)
+# residuals.lm(model)
+```
+
+Сообщение "Coefficients: (1 not defined because of singularities)" говорит о том,
+что  в данные есть линейно зависиммые переменные. Узнаем какие это переменные.
+```{r}
+alias(model)
+```
+
+Логично, что время сна линейно зависит от времени в двух режимах сна. Давайте 
+еще посмотрим на матрицу корреляций.
+```{r}
+cor(x=dfNew.num %>% 
+      mutate(PRED_IND=as.numeric(PRED_IND), EXP_IND=as.numeric(EXP_IND), DANG_IND=as.numeric(DANG_IND), SLOWWAVE_PARADOX=SLOWWAVE+PARADOX),
+    use="pairwise.complete.obs") 
+```
+
+Действительно, можно увидеть, что SLEEP линейно зависим с SLOWWAVE+PARADOX.
