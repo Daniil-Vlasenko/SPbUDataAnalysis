@@ -283,13 +283,6 @@ stepAIC(model.AIC, direction="both")
 
 Все три разных AIC приводят к одинаковому результату.
 
-10\. Построим регрессионную модель на основе признаков, которые выбрал strpAIC.
-```{r}
-model.AIC = lm(LIFESPAN.log~BRAIN_WE.log+SLOWWAVE+PARADOX+EXP_IND, data=dfNew.num, na.action="na.exclude")
-model.AIC.beta <- lm.beta(model.AIC)
-summary(model.AIC.beta)
-```
-  
 Поссмотрим на признаки, которые оставил stepAIС.
 ```{r, message=FALSE, warning=FALSE}
 dfNew %>% dplyr::select(-NAME) %>%
@@ -297,10 +290,17 @@ dfNew %>% dplyr::select(-NAME) %>%
           columns = c("BRAIN_WE.log", "SLOWWAVE", "PARADOX", "EXP_IND"))
 ```
 
-Построим residuals plot.
+10\. Построим регрессионную модель на основе признаков, которые выбрал strpAIC.
+```{r}
+model.AIC = lm(LIFESPAN.log~BRAIN_WE.log+SLOWWAVE+PARADOX+EXP_IND, data=dfNew.num, na.action="na.exclude")
+model.AIC.beta <- lm.beta(model.AIC)
+summary(model.AIC.beta)
+```
+
+Построим Predicted vs Residuals plot.
 ```{r, warning=FALSE}
-df <- data_frame(fitted.values=fitted(model.AIC.beta), residuals=residuals(model.AIC.beta))
-ggplot(df, aes(x=fitted.values, y=residuals)) +
+df <- data_frame(predicted=fitted(model.AIC.beta), residuals=residuals(model.AIC.beta))
+ggplot(df, aes(x=predicted, y=residuals)) +
   geom_point()
 ```
           

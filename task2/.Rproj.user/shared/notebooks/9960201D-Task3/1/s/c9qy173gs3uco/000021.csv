@@ -1,3 +1,0 @@
-"0","df <- data_frame(fitted.values=fitted(model.AIC.beta), residuals=residuals(model.AIC.beta))"
-"0","ggplot(df, aes(x=fitted.values, y=residuals)) +"
-"0","  geom_point()"
