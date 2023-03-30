@@ -97,47 +97,17 @@ df %>% dplyr::select(-NAME) %>%
 ```{r}
 dfNew <- df %>% mutate(PRED_IND = as.factor(PRED_IND), EXP_IND = as.factor(EXP_IND),
                    DANG_IND = as.factor(DANG_IND), 
-                   BODY_WEI = log(BODY_WEI), BRAIN_WE = log(BRAIN_WE), 
-                   LIFESPAN = log(LIFESPAN), GESTTIME = log(GESTTIME))
+                   BODY_WEI.log = log(BODY_WEI), BRAIN_WE.log = log(BRAIN_WE), 
+                   LIFESPAN.log = log(LIFESPAN), GESTTIME.log = log(GESTTIME))
 ```
 
-Посмотрим на новые данные. Сгруппируем индивидов по факторам.
-
-## {.tabset .unlisted .unnumbered}
-
-### No factorization
+Посмотрим на новые данные.
 
 ```{r, message=FALSE, warning=FALSE}
 dfNew %>% dplyr::select(-NAME) %>%
   ggpairs(diag=list(continuous = "barDiag"), 
-          columns = c("BODY_WEI", "BRAIN_WE", "SLOWWAVE", "PARADOX", "SLEEP", "LIFESPAN", "GESTTIME"))
+          columns = c("BODY_WEI.log", "BRAIN_WE.log", "SLOWWAVE", "PARADOX", "SLEEP", "LIFESPAN.log", "GESTTIME.log"))
 ```
-
-### PRED_IND
-
-```{r, message=FALSE, warning=FALSE}
-dfNew %>% dplyr::select(-NAME) %>%
-  ggpairs(diag=list(continuous = "barDiag"), aes(colour=PRED_IND), legend=1,
-          columns=c("BODY_WEI", "BRAIN_WE", "SLOWWAVE", "PARADOX", "SLEEP", "LIFESPAN", "GESTTIME"))
-```
-
-### EXP_IND
-
-```{r, message=FALSE, warning=FALSE}
-dfNew %>% dplyr::select(-NAME) %>%
-  ggpairs(diag=list(continuous = "barDiag"), aes(colour=EXP_IND), legend=1,
-          columns=c("BODY_WEI", "BRAIN_WE", "SLOWWAVE", "PARADOX", "SLEEP", "LIFESPAN", "GESTTIME"))
-```
-
-### DANG_IND
-
-```{r, message=FALSE, warning=FALSE}
-dfNew %>% dplyr::select(-NAME) %>%
-  ggpairs(diag=list(continuous = "barDiag"), aes(colour=DANG_IND), legend=1,
-          columns=c("BODY_WEI", "BRAIN_WE", "SLOWWAVE", "PARADOX", "SLEEP", "LIFESPAN", "GESTTIME"))
-```
-
-## {.unlisted .unnumbered}
 
 7\. Аутлайеров нет.
 
@@ -174,9 +144,8 @@ data.frame(lapply(as.list(dfNew[2:8]), characteristics)) %>% t()
 library(lm.beta)
 dfNew.num <- dfNew %>% dplyr::select(-NAME) %>%
   mutate(PRED_IND=as.numeric(PRED_IND), EXP_IND=as.numeric(EXP_IND), DANG_IND=as.numeric(DANG_IND))
-model1 = lm(LIFESPAN~., data=dfNew.num, na.action="na.exclude")
+model1 = lm(LIFESPAN.log~., data=dfNew.num, na.action="na.exclude")
 summary(model1)
-# residuals.lm(model)
 ```
 
 Сообщение "Coefficients: (1 not defined because of singularities)" говорит о том,
@@ -198,12 +167,12 @@ cor(x=dfNew.num %>%
 переменные независимыми. В нашем случаем нужно удалить SLEEP из модели. 
 Стандартизируем коэффициенты.
 ```{r}
-model1 = lm(LIFESPAN~BODY_WEI+BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND+DANG_IND, data=dfNew.num, na.action="na.exclude")
+model1 = lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLOWWAVE+PARADOX+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, data=dfNew.num, na.action="na.exclude")
 model1.beta <- lm.beta(model1)
 summary(model1.beta)
 ```
 Модель значима, p-value: 1.148e-06.
-Среди переменных значима только BRAIN_WE с уровнем значимости 0.05 и SLOWWAVE,
+Среди переменных значима только BRAIN_WE.log с уровнем значимости 0.05 и SLOWWAVE,
 PRED_IND с уровнем значимости 0.1.
 
 4\. 
@@ -216,7 +185,7 @@ cov2cor(vcov(model1))
 ```
 
 Центр эллипсоида (0.27819, -0.54334), наклон главной диагонали эллипсоида -0.09454401.
-```{r}
+```{r, message=FALSE}
 library(DescTools)
 
 tmp <- data_frame(SLOWWAV=c(0.27819), PRED_IND=c(-0.54334))
@@ -250,7 +219,7 @@ ols_correlations(model1)
 
 Меньшая частная корреляция у DANG_IND. Удалим из модели DANG_IND.
 ```{r}
-model2 = lm(LIFESPAN~BODY_WEI+BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND, 
+model2 = lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLOWWAVE+PARADOX+GESTTIME.log+PRED_IND+EXP_IND, 
             data=dfNew.num, na.action="na.exclude")
 model2.beta <- lm.beta(model2)
 summary(model2.beta)
@@ -265,9 +234,9 @@ ols_vif_tol(model2)
 ols_correlations(model2)
 ```
 
-Удалим BODY_WEI из модели.
+Удалим BODY_WEI.log из модели.
 ```{r}
-model3 = lm(LIFESPAN~BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND, 
+model3 = lm(LIFESPAN.log~BRAIN_WE.log+SLOWWAVE+PARADOX+GESTTIME.log+PRED_IND+EXP_IND, 
             data=dfNew.num, na.action="na.exclude")
 model3.beta <- lm.beta(model3)
 summary(model3.beta)
@@ -282,9 +251,9 @@ ols_vif_tol(model3)
 ols_correlations(model2)
 ```
 
-Удалим BODY_WEI из модели.
+Удалим BODY_WEI.log из модели.
 ```{r}
-model4 = lm(LIFESPAN~SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND, 
+model4 = lm(LIFESPAN.log~SLOWWAVE+PARADOX+GESTTIME.log+PRED_IND+EXP_IND, 
             data=dfNew.num, na.action="na.exclude")
 model4.beta <- lm.beta(model4)
 summary(model4.beta)
@@ -296,14 +265,14 @@ summary(model4.beta)
 Проведем backward AIC.
 ```{r}
 library(MASS)
-model1.AIC <- lm(LIFESPAN~BODY_WEI+BRAIN_WE+SLOWWAVE+PARADOX+GESTTIME+PRED_IND+EXP_IND+DANG_IND, 
+model1.AIC <- lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLOWWAVE+PARADOX+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, 
                 data=na.omit(dfNew.num))
 stepAIC(model1.AIC, direction="backward")
 ```
 
 Проведем forward AIC.
 ```{r}
-model2.AIC <- lm(LIFESPAN~1, data=na.omit(dfNew.num))
+model2.AIC <- lm(LIFESPAN.log~1, data=na.omit(dfNew.num))
 stepAIC(model2.AIC, direction="forward", scope=list(upper=model1.AIC,lower=model2.AIC))
 ```
 
@@ -314,4 +283,31 @@ stepAIC(model.AIC, direction="both")
 
 Все три разных AIC приводят к одинаковому результату.
 
-
+10\. Построим регрессионную модель на основе признаков, которые выбрал strpAIC.
+```{r}
+model.AIC = lm(LIFESPAN.log~BRAIN_WE.log+SLOWWAVE+PARADOX+EXP_IND, data=dfNew.num, na.action="na.exclude")
+model.AIC.beta <- lm.beta(model.AIC)
+summary(model.AIC.beta)
+```
+  
+Поссмотрим на признаки, которые оставил stepAI.
+```{r, message=FALSE, warning=FALSE}
+dfNew %>% dplyr::select(-NAME) %>%
+  ggpairs(diag=list(continuous = "barDiag"), 
+          columns = c("BRAIN_WE.log", "SLOWWAVE", "PARADOX", "EXP_IND"))
+```
+                
+```{r}
+residuals(model.AIC.beta)
+plot(fitted(model.AIC.beta), res)
+fitted(model.AIC.beta)
+```
+          
+                
+                
+                
+                
+                
+                
+                
+                
