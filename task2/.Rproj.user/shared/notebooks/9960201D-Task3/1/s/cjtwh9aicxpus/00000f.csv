@@ -1,4 +1,4 @@
-"0","model.AIC = lm(LIFESPAN.log~BRAIN_WE.log+SLOWWAVE+PARADOX+EXP_IND, data=dfNew.num, na.action=""na.exclude"")"
+"0","model.AIC = lm(LIFESPAN.log~BRAIN_WE.log+SLOWWAVE+PARADOX+EXP_IND, data=dfNew.num, na.action=""na.omit"")"
 "0","model.AIC.beta <- lm.beta(model.AIC)"
 "0","summary(model.AIC.beta)"
 "1","
@@ -6,7 +6,7 @@ Call:
 "
 "1",""
 "1","lm(formula = LIFESPAN.log ~ BRAIN_WE.log + SLOWWAVE + PARADOX + 
-    EXP_IND, data = dfNew.num, na.action = ""na.exclude"")"
+    EXP_IND, data = dfNew.num, na.action = ""na.omit"")"
 "1",""
 "1","
 

@@ -278,7 +278,7 @@ stepAIC(model2.AIC, direction="forward", scope=list(upper=model1.AIC,lower=model
 
 Проведем both side AIC.
 ```{r}
-stepAIC(model.AIC, direction="both")
+stepAIC(model1.AIC, direction="both")
 ```
 
 Все три разных AIC приводят к одинаковому результату.
@@ -292,23 +292,33 @@ dfNew %>% dplyr::select(-NAME) %>%
 
 10\. Построим регрессионную модель на основе признаков, которые выбрал strpAIC.
 ```{r}
-model.AIC = lm(LIFESPAN.log~BRAIN_WE.log+SLOWWAVE+PARADOX+EXP_IND, data=dfNew.num, na.action="na.exclude")
+model.AIC <- lm(LIFESPAN.log~BRAIN_WE.log+SLOWWAVE+PARADOX+EXP_IND, data=dfNew.num, na.action="na.omit")
 model.AIC.beta <- lm.beta(model.AIC)
 summary(model.AIC.beta)
 ```
 
-Построим Predicted vs Residuals plot.
+Построим на Predicted vs Residuals plot.
 ```{r, warning=FALSE}
-df <- data_frame(predicted=fitted(model.AIC.beta), residuals=residuals(model.AIC.beta))
-ggplot(df, aes(x=predicted, y=residuals)) +
+df.fr <- data_frame(predicted=fitted(model.AIC.beta), residuals=residuals(model.AIC.beta))
+ggplot(df.fr, aes(x=predicted, y=residuals)) +
   geom_point()
 ```
-          
-                
-                
-                
-                
-                
-                
-                
-                
+
+Вот такая красота есть, пока не разобрался в ней.
+```{r}
+library(olsrr)
+ols_plot_resid_stud_fit(model.AIC)
+```
+
+Посмотрим на Residuls vs Deleted Residuals plot.
+```{r}
+df.rs <- data_frame(residuals=residuals(model.AIC), studres=studres(model.AIC))
+ggplot(df.rs, aes(x=residuals, y=studres)) +
+  geom_point() +
+  geom_abline(slope=1, intercept=0)
+
+```
+
+
+      
+
