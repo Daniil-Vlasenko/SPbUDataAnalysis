@@ -290,17 +290,18 @@ model.AIC.beta <- lm.beta(model.AIC)
 summary(model.AIC.beta)
 ```
   
-Поссмотрим на признаки, которые оставил stepAI.
+Поссмотрим на признаки, которые оставил stepAIС.
 ```{r, message=FALSE, warning=FALSE}
 dfNew %>% dplyr::select(-NAME) %>%
   ggpairs(diag=list(continuous = "barDiag"), 
           columns = c("BRAIN_WE.log", "SLOWWAVE", "PARADOX", "EXP_IND"))
 ```
-                
-```{r}
-residuals(model.AIC.beta)
-plot(fitted(model.AIC.beta), res)
-fitted(model.AIC.beta)
+
+Построим residuals plot.
+```{r, warning=FALSE}
+df <- data_frame(fitted.values=fitted(model.AIC.beta), residuals=residuals(model.AIC.beta))
+ggplot(df, aes(x=fitted.values, y=residuals)) +
+  geom_point()
 ```
           
                 
