@@ -61,19 +61,8 @@ df %>% summarise(BODY_WEI = round(mode_rate(BODY_WEI), 3), BRAIN_WE = round(mode
                 GESTTIME = round(mode_rate(GESTTIME), 3))
 ```
 
-Отношение частоты повторных элементов к числу элементов.
-
-```{r}
-df %>% summarise(BODY_WEI = round(repeat_rate(BODY_WEI), 3), BRAIN_WE = round(repeat_rate(BRAIN_WE), 3), 
-                SLOWWAVE = round(repeat_rate(SLOWWAVE), 3), PARADOX = round(repeat_rate(PARADOX), 3), 
-                SLEEP = round(repeat_rate(SLEEP), 3), LIFESPAN = round(repeat_rate(LIFESPAN), 3), 
-                GESTTIME = round(repeat_rate(GESTTIME), 3))
-```
-
-Будем считать данные дискретными, если отношение частоты моды к числу элементов 
-больше 10%, а отношение частоты повторных элементов к числу элементов больше 15%.
-Тогда BODY_WEI, BRAIN_WE будут непрерывными, а BRAIN_WE, PARADOX, SLEEP, LIFESPAN, 
-GESTTIME дискретными.
+Дискретизация есть, будем иметь это в виду, когда нужно будет применять критерии,
+для которых важна непрерывность признаков.
 
 4\. Не актуально для текущих данных.
 
@@ -94,15 +83,18 @@ df %>% dplyr::select(-NAME) %>%
 (выше заметны сильно отличающиеся индивиды, это слоны) и получить нормыльные 
 распределения признаков. Факторизуем индексы.
 
+Так же многие методы связанные с регрессией требуют отстутствия пропусков в данных,
+поэтому удалим пропуски из выборки.
+
 ```{r}
-dfNew <- df %>% mutate(PRED_IND = as.factor(PRED_IND), EXP_IND = as.factor(EXP_IND),
-                   DANG_IND = as.factor(DANG_IND), 
-                   BODY_WEI.log = log(BODY_WEI), BRAIN_WE.log = log(BRAIN_WE), 
-                   LIFESPAN.log = log(LIFESPAN), GESTTIME.log = log(GESTTIME))
+dfNew <- df %>% 
+  mutate(PRED_IND = as.factor(PRED_IND), EXP_IND = as.factor(EXP_IND),
+         DANG_IND = as.factor(DANG_IND), 
+         BODY_WEI.log = log(BODY_WEI), BRAIN_WE.log = log(BRAIN_WE), 
+         LIFESPAN.log = log(LIFESPAN), GESTTIME.log = log(GESTTIME))
 ```
 
 Посмотрим на новые данные.
-
 ```{r, message=FALSE, warning=FALSE}
 dfNew %>% dplyr::select(-NAME) %>%
   ggpairs(diag=list(continuous = "barDiag"), 
@@ -134,40 +126,43 @@ data.frame(lapply(as.list(dfNew[2:8]), characteristics)) %>% t()
 ```
 
 # Регрессионный анализ данных.
-1\. Выше.
-
-2,3\. Будем исследовать зависимость продолжительности жизни (зависимая переменная) от
-остальных признаков (независиммые переменные).
-
-Построим линейную регрессионную модель и стандартизируем коэффициенты.
+1\. Для начала проверим корреляционную матрицу, чтобы убедится в том, что у нас нет
+линейно зависимых признаков.
 ```{r}
-library(lm.beta)
-dfNew.num <- dfNew %>% dplyr::select(-NAME) %>%
-  mutate(PRED_IND=as.numeric(PRED_IND), EXP_IND=as.numeric(EXP_IND), DANG_IND=as.numeric(DANG_IND))
-model1 = lm(LIFESPAN.log~., data=dfNew.num, na.action="na.exclude")
-summary(model1)
-```
+dfNew.num <- dfNew %>% 
+  mutate(PRED_IND = as.numeric(PRED_IND), EXP_IND = as.numeric(EXP_IND), 
+         DANG_IND = as.numeric(DANG_IND))
 
-Сообщение "Coefficients: (1 not defined because of singularities)" говорит о том,
-что  в данные есть линейно зависиммые переменные. Узнаем какие это переменные.
-```{r}
-alias(model1)
-```
-
-Логично, что время сна линейно зависит от времени в двух режимах сна. Давайте 
-еще посмотрим на матрицу корреляций.
-```{r}
-cor(x=dfNew.num %>% 
+cor(x=dfNew.num %>% dplyr::select(-NAME) %>%
       mutate(SLOWWAVE_PARADOX=SLOWWAVE+PARADOX),
     use="pairwise.complete.obs") 
 ```
 
-Действительно, можно увидеть, что SLEEP линейно зависима с SLOWWAVE+PARADOX.
+Можно увидеть, что SLEEP линейно зависима с SLOWWAVE+PARADOX.
 Обрающаю внимание, что для использования lm.beta нужно сделать независимые 
-переменные независимыми. В нашем случаем нужно удалить SLEEP из модели. 
-Стандартизируем коэффициенты.
+переменные независимыми. В нашем случаем нужно удалить SLEEP, SLOWWAVE или PARADOX 
+из модели. Так как в SLOWWAVE и PARADOX много пропусков, удалим их обоих.
+Так же многие методы связанные с регрессией требуют отстутствия пропусков в данных,
+поэтому удалим пропуски из выборки.
 ```{r}
-model1 = lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLOWWAVE+PARADOX+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, data=dfNew.num, na.action="na.exclude")
+dfNew.o.dum <- dfNew %>% dplyr::select(-SLOWWAVE, -PARADOX) %>% na.omit()
+dfNew.o.num <- dfNew.num %>% dplyr::select(-SLOWWAVE, -PARADOX) %>% na.omit()
+```
+
+Посмотрим на новые данные.
+```{r, message=FALSE}
+dfNew.o.num %>% dplyr::select(-NAME) %>%
+  ggpairs(diag=list(continuous = "barDiag"), 
+          columns = c("BODY_WEI.log", "BRAIN_WE.log", "SLEEP", "LIFESPAN.log", "GESTTIME.log"))
+```
+
+2,3\. Будем исследовать зависимость продолжительности жизни (зависимая переменная) от
+остальных признаков (независиммые переменные).
+
+Построим линейную регрессионную модель c  и стандартизируем коэффициенты. 
+```{r}
+library(lm.beta)
+model1 = lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, data=dfNew.o.num, na.action="na.exclude")
 model1.beta <- lm.beta(model1)
 summary(model1.beta)
 ```
