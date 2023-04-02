@@ -1,3 +1,0 @@
-"0","dfNew %>% dplyr::select(-NAME) %>%"
-"0","  ggpairs(diag=list(continuous = ""barDiag""), "
-"0","          columns = c(""BRAIN_WE.log"", ""SLOWWAVE"", ""PARADOX"", ""EXP_IND""))"
