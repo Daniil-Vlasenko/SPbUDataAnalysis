@@ -126,46 +126,63 @@ data.frame(lapply(as.list(dfNew[2:8]), characteristics)) %>% t()
 ```
 
 # Регрессионный анализ данных.
-1\. Выше.
-
-2,3\. Будем исследовать зависимость продолжительности жизни (зависимая переменная) от
-остальных признаков (независиммые переменные).
-
-Для начала проверим корреляционную матрицу, чтобы убедится в том, что у нас нет
+1\. Для начала проверим корреляционную матрицу, чтобы убедится в том, что у нас нет
 линейно зависимых признаков.
 ```{r}
-cor(x=dfNew.num %>% 
+dfNew.num <- dfNew %>% 
+  mutate(PRED_IND = as.numeric(PRED_IND), EXP_IND = as.numeric(EXP_IND), 
+         DANG_IND = as.numeric(DANG_IND))
+
+cor(x=dfNew.num %>% dplyr::select(-NAME) %>%
       mutate(SLOWWAVE_PARADOX=SLOWWAVE+PARADOX),
     use="pairwise.complete.obs") 
 ```
 
-Действительно, можно увидеть, что SLEEP линейно зависима с SLOWWAVE+PARADOX.
+Можно увидеть, что SLEEP линейно зависима с SLOWWAVE+PARADOX.
 Обрающаю внимание, что для использования lm.beta нужно сделать независимые 
 переменные независимыми. В нашем случаем нужно удалить SLEEP, SLOWWAVE или PARADOX 
 из модели. Так как в SLOWWAVE и PARADOX много пропусков, удалим их обоих.
 Так же многие методы связанные с регрессией требуют отстутствия пропусков в данных,
 поэтому удалим пропуски из выборки.
 ```{r}
-dfNew <- dfNew %>% dplyr::select(-SLOWWAVE, -PARADOX) %>% na.omit()
+dfNew.o.dum <- dfNew %>% dplyr::select(-SLOWWAVE, -PARADOX) %>% na.omit()
+dfNew.o.num <- dfNew.num %>% dplyr::select(-SLOWWAVE, -PARADOX) %>% na.omit()
+```
+
+Посмотрим сколько было индивидов в выборке до и после удаления.
+```{r}
+c(nrow(dfNew), nrow(dfNew.o.num))
 ```
 
 Посмотрим на новые данные.
 ```{r, message=FALSE}
-dfNew %>% dplyr::select(-NAME) %>%
+dfNew.o.num %>% dplyr::select(-NAME) %>%
   ggpairs(diag=list(continuous = "barDiag"), 
           columns = c("BODY_WEI.log", "BRAIN_WE.log", "SLEEP", "LIFESPAN.log", "GESTTIME.log"))
 ```
 
-Построим линейную регрессионную модель и стандартизируем коэффициенты. 
+2,3\. Будем исследовать зависимость продолжительности жизни (зависимая переменная) от
+остальных признаков (независиммые переменные).
+
+Построим линейную регрессионную модель c dummy variables и без них и 
+стандартизируем коэффициенты. 
 ```{r}
 library(lm.beta)
-model1 = lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLOWWAVE+PARADOX+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, data=dfNew.num, na.action="na.exclude")
-model1.beta <- lm.beta(model1)
-summary(model1.beta)
+
+model1.num = lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, 
+                data=dfNew.o.num, na.action="na.exclude")
+model1.num.beta <- lm.beta(model1.num)
+summary(model1.num.beta)
+
+model1.dum = lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, 
+                data=dfNew.o.dum, na.action="na.exclude")
+model1.dum.beta <- lm.beta(model1.dum)
+summary(model1.dum.beta)
 ```
-Модель значима, p-value: 1.148e-06.
-Среди переменных значима только BRAIN_WE.log с уровнем значимости 0.05 и SLOWWAVE,
-PRED_IND с уровнем значимости 0.1.
+Далее будем работать с данными без dummy variables так как модель без них
+более значима, p-value: 8.626e-11. Среди переменных значимы BRAIN_WE.log с 
+уровнем значимости 0.001, PRED_IND с уровнем значимости 0.05 и BODY_WEI.log, 
+DANG_IND с уровнем 0.1.
 
 4\. 
 

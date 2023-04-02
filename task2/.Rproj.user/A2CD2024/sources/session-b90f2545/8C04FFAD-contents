@@ -149,6 +149,11 @@ dfNew.o.dum <- dfNew %>% dplyr::select(-SLOWWAVE, -PARADOX) %>% na.omit()
 dfNew.o.num <- dfNew.num %>% dplyr::select(-SLOWWAVE, -PARADOX) %>% na.omit()
 ```
 
+Посмотрим сколько было индивидов в выборке до и после удаления.
+```{r}
+c(nrow(dfNew), nrow(dfNew.o.num))
+```
+
 Посмотрим на новые данные.
 ```{r, message=FALSE}
 dfNew.o.num %>% dplyr::select(-NAME) %>%
@@ -159,16 +164,25 @@ dfNew.o.num %>% dplyr::select(-NAME) %>%
 2,3\. Будем исследовать зависимость продолжительности жизни (зависимая переменная) от
 остальных признаков (независиммые переменные).
 
-Построим линейную регрессионную модель c  и стандартизируем коэффициенты. 
+Построим линейную регрессионную модель c dummy variables и без них и 
+стандартизируем коэффициенты. 
 ```{r}
 library(lm.beta)
-model1 = lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, data=dfNew.o.num, na.action="na.exclude")
-model1.beta <- lm.beta(model1)
-summary(model1.beta)
+
+model1.num = lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, 
+                data=dfNew.o.num, na.action="na.exclude")
+model1.num.beta <- lm.beta(model1.num)
+summary(model1.num.beta)
+
+model1.dum = lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, 
+                data=dfNew.o.dum, na.action="na.exclude")
+model1.dum.beta <- lm.beta(model1.dum)
+summary(model1.dum.beta)
 ```
-Модель значима, p-value: 1.148e-06.
-Среди переменных значима только BRAIN_WE.log с уровнем значимости 0.05 и SLOWWAVE,
-PRED_IND с уровнем значимости 0.1.
+Далее будем работать с данными без dummy variables так как модель без них
+более значима, p-value: 8.626e-11. Среди переменных значимы BRAIN_WE.log с 
+уровнем значимости 0.001, PRED_IND с уровнем значимости 0.05 и BODY_WEI.log, 
+DANG_IND с уровнем 0.1.
 
 4\. 
 
