@@ -317,28 +317,30 @@ model.AIC.beta <- lm.beta(model.AIC)
 summary(model.AIC.beta)
 ```
  
-Построим на Predicted vs Residuals plot.
-```{r, warning=FALSE}
-df.fr <- data_frame(predicted=fitted(model.AIC.beta), residuals=residuals(model.AIC.beta))
-ggplot(df.fr, aes(x=predicted, y=residuals)) +
-  geom_point()
-```
-
-Вот такая красота есть, пока не разобрался в ней.
+Построим на Predicted vs Residuals plot и еще отдельно посмотрим на 
+стьюдентезированные остатки.
 ```{r}
 library(olsrr)
 ols_plot_resid_stud_fit(model.AIC)
+ols_plot_resid_stud(model.AIC)
+```
+За 3 сигмы нет выбросов, есть только 4 выбраза за 2 сигмы. Посмотрим, что
+это за индивиды.
+```{r}
+dfNew.o.num[c(6,14,22,27,49),]
 ```
 
-Посмотрим на Residuls vs Deleted Residuals plot.
+
+11\. Посмотрим на Residuls vs Deleted Residuals plot.
+Красная линия - это линия y=x, а синия линий - это линия регрессии.
 ```{r}
 df.rs <- data_frame(residuals=residuals(model.AIC), studres=studres(model.AIC))
 ggplot(df.rs, aes(x=residuals, y=studres)) +
   geom_point() +
-  geom_abline(slope=1, intercept=0)
-
+  geom_abline(slope=1, intercept=0, color='#E41A1C') +
+  geom_smooth(method='lm')
 ```
 
-
+Выбросов относительно регрессии нет.
       
 
