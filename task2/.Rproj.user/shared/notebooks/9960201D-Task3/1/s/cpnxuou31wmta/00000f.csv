@@ -1,7 +1,7 @@
 "0","library(lm.beta)"
 "0",""
 "0","model1.num = lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, "
-"0","                data=dfNew.o.num, na.action=""na.exclude"")"
+"0","                data=dfNew.o.num)"
 "0","model1.num.beta <- lm.beta(model1.num)"
 "0","summary(model1.num.beta)"
 "1","
@@ -9,8 +9,7 @@ Call:
 "
 "1",""
 "1","lm(formula = LIFESPAN.log ~ BODY_WEI.log + BRAIN_WE.log + SLEEP + 
-    GESTTIME.log + PRED_IND + EXP_IND + DANG_IND, data = dfNew.o.num, 
-    na.action = ""na.exclude"")"
+    GESTTIME.log + PRED_IND + EXP_IND + DANG_IND, data = dfNew.o.num)"
 "1",""
 "1","
 
@@ -154,7 +153,7 @@ F-statistic:"
 "1","
 "
 "0","model1.dum = lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, "
-"0","                data=dfNew.o.dum, na.action=""na.exclude"")"
+"0","                data=dfNew.o.dum)"
 "0","model1.dum.beta <- lm.beta(model1.dum)"
 "0","summary(model1.dum.beta)"
 "1","
@@ -162,8 +161,7 @@ Call:
 "
 "1",""
 "1","lm(formula = LIFESPAN.log ~ BODY_WEI.log + BRAIN_WE.log + SLEEP + 
-    GESTTIME.log + PRED_IND + EXP_IND + DANG_IND, data = dfNew.o.dum, 
-    na.action = ""na.exclude"")"
+    GESTTIME.log + PRED_IND + EXP_IND + DANG_IND, data = dfNew.o.dum)"
 "1",""
 "1","
 

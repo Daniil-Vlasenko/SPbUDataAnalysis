@@ -1,5 +1,5 @@
 "0","model2.num = lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+PRED_IND+EXP_IND+DANG_IND, "
-"0","            data=dfNew.o.num)"
+"0","                data=dfNew.o.num)"
 "0","model2.num.beta <- lm.beta(model2.num)"
 "0","summary(model2.num.beta)"
 "1","

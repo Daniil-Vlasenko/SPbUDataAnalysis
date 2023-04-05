@@ -1,5 +1,4 @@
-"0","shapiro.test(residuals(model.AIC.beta))
-"
+"0","shapiro.test(residuals(model.AIC.beta))"
 "1","
 "
 "1","	Shapiro-Wilk normality test"

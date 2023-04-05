@@ -1,5 +1,5 @@
 "0","model5.num = lm(LIFESPAN.log~BRAIN_WE.log+PRED_IND+EXP_IND, "
-"0","            data=dfNew.o.num, na.action=""na.exclude"")"
+"0","            data=dfNew.o.num)"
 "0","model5.num.beta <- lm.beta(model5.num)"
 "0","summary(model5.num.beta)"
 "1","
@@ -7,7 +7,7 @@ Call:
 "
 "1",""
 "1","lm(formula = LIFESPAN.log ~ BRAIN_WE.log + PRED_IND + EXP_IND, 
-    data = dfNew.o.num, na.action = ""na.exclude"")"
+    data = dfNew.o.num)"
 "1",""
 "1","
 
