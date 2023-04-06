@@ -1,0 +1,4 @@
+"0","df <- read_excel(""Sleep/SLEEP_shortname.xls"")"
+"0","df[df < 0] <- NA"
+"0",""
+"0","head(df)"

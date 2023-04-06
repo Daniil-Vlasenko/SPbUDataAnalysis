@@ -1,0 +1,25 @@
+"0","model5.num
+"
+"1","
+Call:
+"
+"1",""
+"1","lm(formula = LIFESPAN.log ~ BRAIN_WE.log + PRED_IND, data = dfNew.o.num)"
+"1",""
+"1","
+
+"
+"1","Coefficients:
+"
+"1"," (Intercept)  "
+"1","BRAIN_WE.log  "
+"1","    PRED_IND  "
+"1","
+"
+"1","     1.81243  "
+"1","     0.30911  "
+"1","    -0.07382  "
+"1","
+"
+"1","
+"

@@ -1,0 +1,5 @@
+"0","dfNew <- df %>% "
+"0","  mutate(PRED_IND = as.factor(PRED_IND), EXP_IND = as.factor(EXP_IND),"
+"0","         DANG_IND = as.factor(DANG_IND), "
+"0","         BODY_WEI.log = log(BODY_WEI), BRAIN_WE.log = log(BRAIN_WE), "
+"0","         LIFESPAN.log = log(LIFESPAN), GESTTIME.log = log(GESTTIME))"

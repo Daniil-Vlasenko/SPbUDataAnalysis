@@ -160,10 +160,6 @@ summary(model1.dum.beta)
 уровнем значимости 0.001, PRED_IND с уровнем значимости 0.05 и BODY_WEI.log, 
 DANG_IND с уровнем 0.1.
 
-4\. 
-
-6\.
-
 7, 8\. Уберем в ручную избыточные переменные. Вычислим Tolerance.
 [R - множественный коэффициент корреляции между признаком и всеми остальными 
 независимыми признаками; Tolerance = 1 - R^2; VIF = 1 / (1 - R^2) = 1 / Tolerance.]
@@ -308,7 +304,7 @@ dfNew.o.num %>% dplyr::select(-NAME) %>%
           columns = c("PRED_IND", "EXP_IND", "DANG_IND"))
 ```
 
-10\. Построим регрессионную модель на основе признаков, которые выбрал strpAIC 
+10\. Построим регрессионную модель на основе признаков, которые выбрал stepAIC 
 (все без GESTTIME.log).
 ```{r}
 model.AIC <- lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+PRED_IND+EXP_IND+DANG_IND, 
@@ -330,16 +326,19 @@ library(olsrr)
 ols_plot_resid_stud_fit(model.AIC)
 ols_plot_resid_stud(model.AIC)
 ```
+
 За 3 сигмы нет выбросов, есть только 5 выбросов за 2 сигмы. Посмотрим, что
 это за индивиды.
 ```{r}
+dfNew.o.num[c(6,14,22,27,49),]$NAME
 dfNew.o.num[c(6,14,22,27,49),]
 ```
+
 Большая летучая коричневая мышь, ехидна, суслик, маленькая летучая коричневая мышь, тупайи.
 
 11\. Посмотрим на Residuls vs Deleted Residuals plot.
 Красная линия - это линия y=x, а синия линий - это линия регрессии.
-```{r}
+```{r, message=FALSE, warning=FALSE}
 df.rs <- data_frame(residuals=residuals(model.AIC), studres=studres(model.AIC))
 ggplot(df.rs, aes(x=residuals, y=studres)) +
   geom_point() +
@@ -350,7 +349,7 @@ ggplot(df.rs, aes(x=residuals, y=studres)) +
 Выбросов относительно регрессии нет.
 
 11\. Растояние Махаланобиса.
-```{r, message=FALSE}
+```{r, message=FALSE, warning=FALSE}
 library(rstatix)
 mahal <- dfNew.o.num %>% 
          dplyr::select(-NAME) %>%
@@ -358,10 +357,20 @@ mahal <- dfNew.o.num %>%
 plot(mahal$mahal.dist)
 ```
 
-Растояние Кука.
+Посмотрим на топ 5 индивидов.
 ```{r}
-library(car)
-plot(cooks.distance(model.AIC))
+dfNew.o.num[mahal$mahal.dist %in% tail(sort(mahal$mahal.dist),5),]
 ```
 
+
+Растояние Кука.
+```{r, message=FALSE, warning=FALSE}
+cook <- cooks.distance(model.AIC)
+plot(cook)
+```
+
+Посмотрим на топ 5 индивидов.
+```{r}
+dfNew.o.num[cook %in% tail(sort(cook),5),]
+```
 

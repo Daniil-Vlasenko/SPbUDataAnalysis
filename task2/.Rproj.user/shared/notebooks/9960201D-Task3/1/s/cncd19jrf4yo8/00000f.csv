@@ -1,2 +1,0 @@
-"0","library(ellipse)"
-"0","plot(ellipse(model5.num, which = c(2, 3), level = 0.95), type=""l"")"
