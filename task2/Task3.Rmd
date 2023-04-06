@@ -265,7 +265,7 @@ summary(model5.num.beta)
 коэффициентами модели. 
 ```{r, message=FALSE}
 library(ellipse)
-plot(ellipse(model5.num, which = c(2, 3), level = 0.95), type="l")
+plot(ellipse(model5.num, which = c(2, 3), level = 0.95), type="l") #не работает
 ```
 
 Плохая доверительная область, так как оба коэффициента могут быть незначимы.
@@ -359,6 +359,7 @@ plot(mahal$mahal.dist)
 
 Посмотрим на топ 5 индивидов.
 ```{r}
+dfNew.o.num[mahal$mahal.dist %in% tail(sort(mahal$mahal.dist),5),]$NAME
 dfNew.o.num[mahal$mahal.dist %in% tail(sort(mahal$mahal.dist),5),]
 ```
 
@@ -371,6 +372,7 @@ plot(cook)
 
 Посмотрим на топ 5 индивидов.
 ```{r}
+dfNew.o.num[cook %in% tail(sort(cook),5),]$NAME
 dfNew.o.num[cook %in% tail(sort(cook),5),]
 ```
 

@@ -1,6 +1,0 @@
-"0","mode_rate <- function(x) {"
-"0","  x <- x[!is.na(x)]"
-"0","  u <- unique(x)"
-"0","  tab <- tabulate(match(x, u))"
-"0","  max(tab) / length(x)"
-"0","}"

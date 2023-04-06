@@ -1,4 +1,0 @@
-"0","df %>% summarise(BODY_WEI = round(mode_rate(BODY_WEI), 3), BRAIN_WE = round(mode_rate(BRAIN_WE), 3), "
-"0","                SLOWWAVE = round(mode_rate(SLOWWAVE), 3), PARADOX = round(mode_rate(PARADOX), 3), "
-"0","                SLEEP = round(mode_rate(SLEEP), 3), LIFESPAN = round(mode_rate(LIFESPAN), 3), "
-"0","                GESTTIME = round(mode_rate(GESTTIME), 3))"

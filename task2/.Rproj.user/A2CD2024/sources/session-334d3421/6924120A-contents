@@ -359,6 +359,7 @@ plot(mahal$mahal.dist)
 
 Посмотрим на топ 5 индивидов.
 ```{r}
+dfNew.o.num[mahal$mahal.dist %in% tail(sort(mahal$mahal.dist),5),]$NAME
 dfNew.o.num[mahal$mahal.dist %in% tail(sort(mahal$mahal.dist),5),]
 ```
 
@@ -371,6 +372,7 @@ plot(cook)
 
 Посмотрим на топ 5 индивидов.
 ```{r}
+dfNew.o.num[cook %in% tail(sort(cook),5),]$NAME
 dfNew.o.num[cook %in% tail(sort(cook),5),]
 ```
 

@@ -1,2 +1,0 @@
-"0","dfNew.o.dum <- dfNew %>% dplyr::select(-SLOWWAVE, -PARADOX) %>% na.omit()"
-"0","dfNew.o.num <- dfNew.num %>% dplyr::select(-SLOWWAVE, -PARADOX) %>% na.omit()"
