@@ -1,4 +1,0 @@
-"0",""
-"0","ggplot(tmp %>% filter(LIFESPAN<55), aes(x=LIFESPAN, y=residuals)) +"
-"0","  geom_point() +"
-"0","  geom_smooth(method=lm, se=FALSE)"

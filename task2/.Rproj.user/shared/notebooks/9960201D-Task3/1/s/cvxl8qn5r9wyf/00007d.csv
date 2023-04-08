@@ -1,6 +1,0 @@
-"0","library(olsrr)"
-"0",""
-"0","tmp <- data_frame(LIFESPAN=dfNew.o.dum$LIFESPAN, residuals=residuals(model.AIC))"
-"0","ggplot(tmp, aes(x=LIFESPAN, y=residuals)) +"
-"0","  geom_point() +"
-"0","  geom_smooth(method=lm, se=FALSE)"

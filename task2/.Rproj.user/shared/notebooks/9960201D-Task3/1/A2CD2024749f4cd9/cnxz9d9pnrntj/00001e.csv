@@ -1,5 +1,0 @@
-"0","df.rs <- data_frame(rstandard=rstandard(model5.dum), rstudent=rstudent(model5.dum))"
-"0","ggplot(df.rs, aes(x=rstandard, y=rstudent)) +"
-"0","  geom_point() +"
-"0","  geom_abline(slope=1, intercept=0, color='#E41A1C') +"
-"0","  geom_smooth(method='lm')"

@@ -374,7 +374,7 @@ df.rs <- data_frame(rstandard=rstandard(model5.dum), rstudent=rstudent(model5.du
 ggplot(df.rs, aes(x=rstandard, y=rstudent)) +
   geom_point() +
   geom_abline(slope=1, intercept=0, color='#E41A1C') +
-  geom_smooth(method='lm')
+  geom_smooth(method=lm, se=FALSE)
 ```
 
 Выбросов относительно регрессии нет.
@@ -421,10 +421,13 @@ dfNew.o.num[c(6,27),]
 
 Проверим где на geopm_point находятся летучие мыши и логично ли, что они 
 проявились как выбросы по растоянию Кука.
-```{r}
-
+```{r, message=FALSE}
+ggplot(dfNew.o.num, aes(x=BRAIN_WE.log, y=LIFESPAN.log, label=1:nrow(dfNew.o.num)))+
+  geom_point() +
+  geom_text(hjust=-0.1, vjust=-0.1) +
+  geom_smooth(method=lm, se=FALSE)
 ```
 
-
+Действительно, так и есть. 6 и 27 это мыши и они выбросы относительно линии регрессии.
 
 

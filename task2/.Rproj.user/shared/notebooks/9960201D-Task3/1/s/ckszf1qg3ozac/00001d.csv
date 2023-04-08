@@ -1,0 +1,4 @@
+"0","ggplot(dfNew.o.num, aes(x=BRAIN_WE.log, y=LIFESPAN.log, label=1:nrow(dfNew.o.num)))+"
+"0","  geom_point() +"
+"0","  geom_text(hjust=-0.1, vjust=-0.1) +"
+"0","  geom_smooth(method=lm, se=FALSE)"
