@@ -373,11 +373,11 @@ dfNew.o.num[tmp$residuals > mean+2*std | tmp$residuals < mean-2*std,]
 
 Большая летучая коричневая мышь, ехидна, маленькая летучая коричневая мышь, тупайи.
 
-11\. Посмотрим на Residuls vs Deleted Residuals plot.
+11\. Посмотрим на Residuals vs Deleted Residuals plot.
 Красная линия - это линия y=x, а синия линий - это линия регрессии.
 ```{r, message=FALSE, warning=FALSE}
-df.rs <- data_frame(residuals=residuals(model.AIC), rstudent=rstudent(model.AIC))
-ggplot(df.rs, aes(x=residuals, y=rstudent)) +
+df.rs <- data_frame(rstandard=rstandard(model.AIC), rstudent=rstudent(model.AIC))
+ggplot(df.rs, aes(x=rstandard, y=rstudent)) +
   geom_point() +
   geom_abline(slope=1, intercept=0, color='#E41A1C') +
   geom_smooth(method='lm')
