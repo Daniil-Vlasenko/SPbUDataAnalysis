@@ -1,5 +1,0 @@
-"0","library(rstatix)"
-"0","mahal <- dfNew.o.num %>% "
-"0","         dplyr::select(-NAME) %>%"
-"0","         mahalanobis_distance()"
-"0","plot(mahal$mahal.dist)"
