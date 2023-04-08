@@ -337,15 +337,15 @@ shapiro.test(residuals(model5.dum.beta))
 ```{r, message=FALSE}
 library(olsrr)
 
-tmp <- data_frame(LIFESPAN=dfNew.o.dum$LIFESPAN, residuals=residuals(model.AIC))
-ggplot(tmp, aes(x=LIFESPAN, y=residuals)) +
+tmp <- data_frame(LIFESPAN=dfNew.o.dum$LIFESPAN, rstandard=rstandard(model5.dum))
+ggplot(tmp, aes(x=LIFESPAN, y=rstandard)) +
   geom_point() +
   geom_smooth(method=lm, se=FALSE)
 
-mean <- mean(tmp$residuals)
-std <- sqrt(var(tmp$residuals))
+mean <- mean(tmp$rstandard)
+std <- sqrt(var(tmp$rstandard))
 
-ggplot(tmp, aes(x=LIFESPAN, y=residuals)) +
+ggplot(tmp, aes(x=LIFESPAN, y=rstandard)) +
   geom_point() +
   geom_hline(yintercept=mean, color = "red") +
   geom_hline(yintercept=mean-std, color = "blue") +
@@ -355,28 +355,22 @@ ggplot(tmp, aes(x=LIFESPAN, y=residuals)) +
   geom_hline(yintercept=mean+2*std, color = "blue") +
   geom_hline(yintercept=mean+3*std, color = "blue")
 
-ggplot(tmp %>% filter(LIFESPAN<55), aes(x=LIFESPAN, y=residuals)) +
-  geom_point() +
-  geom_smooth(method=lm, se=FALSE)
-
 # ols_plot_resid_stud_fit(model5.dum)
 # ols_plot_resid_stud(model5.dum)
-
 ```
 
-За 3 сигмы нет выбросов, есть только 4 выбросов за 2 сигмы. Посмотрим, что
-это за индивиды.
+Есть один индивид за 3 сигмы от центра и два индивида за 2 сигмы, посмотрим кто это.
 ```{r}
-dfNew.o.num[tmp$residuals > mean+2*std | tmp$residuals < mean-2*std,]$NAME
-dfNew.o.num[tmp$residuals > mean+2*std | tmp$residuals < mean-2*std,]
+dfNew.o.num[tmp$rstandard > mean+2*std | tmp$rstandard < mean-2*std,]$NAME
+dfNew.o.num[tmp$rstandard > mean+2*std | tmp$rstandard < mean-2*std,]
 ```
 
-Большая летучая коричневая мышь, ехидна, маленькая летучая коричневая мышь, тупайи.
+Большая летучая коричневая мышь, ехидна, маленькая летучая коричневая мышь.
 
 11\. Посмотрим на Residuals vs Deleted Residuals plot.
 Красная линия - это линия y=x, а синия линий - это линия регрессии.
 ```{r, message=FALSE, warning=FALSE}
-df.rs <- data_frame(rstandard=rstandard(model.AIC), rstudent=rstudent(model.AIC))
+df.rs <- data_frame(rstandard=rstandard(model5.dum), rstudent=rstudent(model5.dum))
 ggplot(df.rs, aes(x=rstandard, y=rstudent)) +
   geom_point() +
   geom_abline(slope=1, intercept=0, color='#E41A1C') +
@@ -390,26 +384,47 @@ ggplot(df.rs, aes(x=rstandard, y=rstudent)) +
 library(rstatix)
 mahal <- dfNew.o.num %>% 
          dplyr::select(-NAME) %>%
-         mahalanobis_distance()
-plot(mahal$mahal.dist)
+         mahalanobis_distance() %>%
+         mutate(index = 1:nrow(dfNew.o.num))
+
+ggplot(mahal, aes(x=index, y=mahal.dist, label=index))+
+  geom_point() +
+  geom_text(hjust=-0.1, vjust=-0.1) +
+  ylab("mahalanobis distance")
 ```
 
-Посмотрим на топ 5 индивидов.
+Посмотрим на топ 4 индивида.
 ```{r}
-dfNew.o.num[mahal$mahal.dist %in% tail(sort(mahal$mahal.dist),5),]$NAME
-dfNew.o.num[mahal$mahal.dist %in% tail(sort(mahal$mahal.dist),5),]
+dfNew.o.num[c(1,4,28,22),]$NAME
+dfNew.o.num[c(1,4,28,22),]
 ```
 
+Так и предполагалось, что слоны проявятся как выбросы при подсчете растояния 
+Махаланобиса.
 
 Растояние Кука.
 ```{r, message=FALSE, warning=FALSE}
-cook <- cooks.distance(model.AIC)
-plot(cook)
+cook <- dfNew.o.num %>% 
+  mutate(cooks.distance = cooks.distance(model5.dum), index = 1:nrow(dfNew.o.num))
+
+ggplot(cook, aes(x=index, y=cooks.distance, label=index))+
+  geom_point() +
+  geom_text(hjust=-0.1, vjust=-0.1) +
+  ylab("cooks distance")
 ```
 
-Посмотрим на топ 5 индивидов.
+Посмотрим на топ 2 индивидов.
 ```{r}
-dfNew.o.num[cook %in% tail(sort(cook),5),]$NAME
-dfNew.o.num[cook %in% tail(sort(cook),5),]
+dfNew.o.num[c(6,27),]$NAME
+dfNew.o.num[c(6,27),]
 ```
+
+Проверим где на geopm_point находятся летучие мыши и логично ли, что они 
+проявились как выбросы по растоянию Кука.
+```{r}
+
+```
+
+
+
 

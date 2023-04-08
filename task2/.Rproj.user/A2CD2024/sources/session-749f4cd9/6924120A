@@ -3,24 +3,24 @@
     "path": "~/programming/R/SPbUDataAnalysis/task2/Task3.Rmd",
     "project_path": "Task3.Rmd",
     "type": "r_markdown",
-    "hash": "245502521",
+    "hash": "0",
     "contents": "",
-    "dirty": false,
+    "dirty": true,
     "created": 1680722608514.0,
     "source_on_save": false,
     "relative_order": 2,
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "379,41",
-        "scrollLine": "374"
+        "cursorPosition": "402,4",
+        "scrollLine": "411"
     },
     "folds": "",
     "lastKnownWriteTime": 1680943159,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1680943159866,
+    "last_content_update": 1680979481164,
     "read_only": false,
     "read_only_alternatives": []
 }
