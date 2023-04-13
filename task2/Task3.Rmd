@@ -441,5 +441,10 @@ exp(predict(model5.dum, new))
 
 На деле капибары живут 8-10 лет на воле и 10-12 в неволе.
 
+```{r}
+dfNew.o.num
+new <- data_frame(BRAIN_WE.log=c(log(76)), PRED_IND=c(3)) %>% mutate(PRED_IND = as.factor(PRED_IND))
+exp(predict(model5.dum, new))
+```
 
 
