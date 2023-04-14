@@ -3,7 +3,7 @@
     "path": "~/programming/R/SPbUDataAnalysis/task2/Task3.Rmd",
     "project_path": "Task3.Rmd",
     "type": "r_markdown",
-    "hash": "1668467756",
+    "hash": "0",
     "contents": "",
     "dirty": false,
     "created": 1680722608514.0,
@@ -12,15 +12,15 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "352,14",
-        "scrollLine": "350"
+        "cursorPosition": "455,52",
+        "scrollLine": "449"
     },
     "folds": "",
-    "lastKnownWriteTime": 1681454269,
+    "lastKnownWriteTime": 1681458490,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1681454269344,
+    "last_content_update": 1681458490616,
     "read_only": false,
     "read_only_alternatives": []
 }

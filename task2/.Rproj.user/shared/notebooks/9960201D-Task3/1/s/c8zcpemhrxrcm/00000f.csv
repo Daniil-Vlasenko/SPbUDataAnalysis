@@ -1,7 +1,0 @@
-"0","cook <- dfNew.o.num %>% "
-"0","  mutate(cooks.distance = cooks.distance(model5.dum), index = 1:nrow(dfNew.o.num))"
-"0",""
-"0","ggplot(cook, aes(x=index, y=cooks.distance, label=index))+"
-"0","  geom_point() +"
-"0","  geom_text(hjust=-0.1, vjust=-0.1) +"
-"0","  ylab(""cooks distance"")"

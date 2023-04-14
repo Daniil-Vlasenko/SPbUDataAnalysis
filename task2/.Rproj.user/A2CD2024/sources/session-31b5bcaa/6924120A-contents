@@ -359,7 +359,7 @@ shapiro.test(residuals(model5.dum.beta))
 С уровнем значимости 0.05 гипотеза нормальности отвергается.
 
 Построим на Predicted vs Residuals plot.
-```{r, message=FALSE}
+```{r, message=FALSE, warning=FALSE}
 library(olsrr)
 
 tmp <- data_frame(LIFESPAN=dfNew.o.dum$LIFESPAN, rstandard=rstandard(model5.dum))
@@ -387,7 +387,6 @@ ggplot(tmp, aes(x=LIFESPAN, y=rstandard)) +
 Есть один индивид за 3 сигмы от центра и два индивида за 2 сигмы, посмотрим кто это.
 ```{r}
 dfNew.o.num[tmp$rstandard > mean+2*std | tmp$rstandard < mean-2*std,]$NAME
-dfNew.o.num[tmp$rstandard > mean+2*std | tmp$rstandard < mean-2*std,]
 ```
 
 Большая летучая коричневая мышь, ехидна, маленькая летучая коричневая мышь.
@@ -412,16 +411,14 @@ mahal <- dfNew.o.num %>%
          mahalanobis_distance() %>%
          mutate(index = 1:nrow(dfNew.o.num))
 
-ggplot(mahal, aes(x=index, y=mahal.dist, label=index))+
-  geom_point() +
-  geom_text(hjust=-0.1, vjust=-0.1) +
-  ylab("mahalanobis distance")
+ggplot(mahal) + geom_point(aes(x=reorder(index, -mahal.dist), y=mahal.dist)) +
+  ylab("mahalanobis distance") +
+  xlab("index")
 ```
 
-Посмотрим на топ 4 индивида.
+Посмотрим на топ 4 индивида, они выбиваются из остальных.
 ```{r}
 dfNew.o.num[c(1,4,28,22),]$NAME
-dfNew.o.num[c(1,4,28,22),]
 ```
 
 Так и предполагалось, что слоны проявятся как выбросы при подсчете растояния 
@@ -432,16 +429,14 @@ dfNew.o.num[c(1,4,28,22),]
 cook <- dfNew.o.num %>% 
   mutate(cooks.distance = cooks.distance(model5.dum), index = 1:nrow(dfNew.o.num))
 
-ggplot(cook, aes(x=index, y=cooks.distance, label=index))+
-  geom_point() +
-  geom_text(hjust=-0.1, vjust=-0.1) +
-  ylab("cooks distance")
+ggplot(cook) + geom_point(aes(x=reorder(index, -cooks.distance), y=cooks.distance)) +
+  ylab("cooks distance") +
+  xlab("index")
 ```
 
 Посмотрим на топ 2 индивидов.
 ```{r}
 dfNew.o.num[c(6,27),]$NAME
-dfNew.o.num[c(6,27),]
 ```
 
 Проверим где на geopm_point находятся летучие мыши и логично ли, что они 
@@ -456,13 +451,15 @@ ggplot(dfNew.o.num, aes(x=BRAIN_WE.log, y=LIFESPAN.log, label=1:nrow(dfNew.o.num
 Действительно, так и есть. 6 и 27 это мыши и они выбросы относительно линии регрессии.
 
 ### Предсказание продолжительности жизни капибар.
-На деле капибары живут 8-10 лет на воле и 10-12 в неволе.
+На деле капибары живут 8-10 лет на воле и 10-12 в неволе. У капибар не много
+врагов в природе, но и на вершины пищевой цепи их не поставить, пусть PRED_IND
+будет равен 3. Средний вес мозга у капибары 76 грамм.
 
 ```{r}
-# dfNew.o.num
-new <- data_frame(BRAIN_WE.log=c(log(76)), PRED_IND=c(3)) %>% mutate(PRED_IND = as.factor(PRED_IND)); new
+new <- data_frame(BRAIN_WE.log=c(log(76)), PRED_IND=c(3)) %>% mutate(PRED_IND = as.factor(PRED_IND))
 exp(predict.lm(model5.dum, new, interval = "prediction"))
-exp(predict.lm(model5.dum, new, interval = "confidence"))
+# exp(predict.lm(model5.dum, new, interval = "confidence"))
 ```
 
-
+Удалось предсказать время жизни капибры по весу мозга и предположению о ее 
+индексе опасности.

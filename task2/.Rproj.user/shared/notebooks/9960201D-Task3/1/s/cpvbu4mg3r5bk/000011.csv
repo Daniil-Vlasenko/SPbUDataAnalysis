@@ -5,4 +5,3 @@
 "1"," ""Little brown bat"""
 "1","
 "
-"0","dfNew.o.num[tmp$rstandard > mean+2*std | tmp$rstandard < mean-2*std,]"
