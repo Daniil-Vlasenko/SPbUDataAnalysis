@@ -1,5 +1,5 @@
-"0","model2.AIC <- lm(LIFESPAN.log~1, data=na.omit(dfNew.o.num))"
-"0","stepAIC(model2.AIC, direction=""forward"", scope=list(upper=model1.AIC,lower=model2.AIC))"
+"0","model2.num.AIC <- lm(LIFESPAN.log~1, data=na.omit(dfNew.o.num))"
+"0","stepAIC(model2.num.AIC, direction=""forward"", scope=list(upper=model1.num.AIC,lower=model2.num.AIC))"
 "1","Start:  AIC="
 "1",""
 "1","-2.44"

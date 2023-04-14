@@ -115,8 +115,8 @@ cor(x=dfNew.num %>% dplyr::select(-NAME) %>%
 Можно увидеть, что SLEEP линейно зависима с SLOWWAVE+PARADOX.
 Обрающаю внимание, что для использования lm.beta нужно сделать независимые 
 переменные независимыми. В нашем случаем нужно удалить SLEEP, SLOWWAVE или PARADOX 
-из модели. Так как в SLOWWAVE и PARADOX много пропусков удалим их обоих.
-Так же многие методы связанные с регрессией требуют отстутствия пропусков в данных,
+из модели. Так как в SLOWWAVE и PARADOX много пропусков, удалим их обоих.
+Так же многие методы, связанные с регрессией, требуют отстутствия пропусков в данных,
 поэтому удалим пропуски из выборки.
 ```{r}
 dfNew.o.dum <- dfNew %>% dplyr::select(-SLOWWAVE, -PARADOX) %>% na.omit()
@@ -151,7 +151,7 @@ dfNew.o.num %>% dplyr::select(-NAME) %>%
 остальных признаков (независиммые переменные).
 
 Построим линейную регрессионную модель c dummy variables и без них и 
-вычислим стандартизованные коэффициенты. 
+вычислим стандартизированные коэффициенты. 
 ```{r}
 library(lm.beta)
 
@@ -288,20 +288,20 @@ model5.num.scale = lm(LIFESPAN.log~BRAIN_WE.log+PRED_IND, data=tmp)
 plot(ellipse(model5.num.scale, which = c(2, 3), level = 0.95), type="l") 
 ```
 
-На эллипсоиде можно заметить, что корреляция между коэффициентами слабая, что 
+На эллипсоиде можно заметить, что корреляция между коэффициентами слабая и что 
 коэффициент при BRAIN_WE.log значим, так как его доверительная область далеко от
 нуля, а доверительная область коэффициента при PRED_IND захватывает 0.
 
-Вспомним, что PRED_IND можно представить как dummy variable. Возможно зависимость
-между PRED_IND и LIFESPAN.log не линейная и модель будет более значимая если представить 
-PRED_IND как dummy variable, чтобы разные его значения могли вносить вклад своими 
+Вспомним, что PRED_IND можно представить как dummy variable. Возможно, зависимость
+между PRED_IND и LIFESPAN.log не линейная, и модель будет более значимая если представить 
+PRED_IND как dummy variables, чтобы разные его значения могли вносить вклад своими 
 коэффициентами. Посмотрим на зависимость LIFESPAN.log и PRED_IND.
 ```{r}
 ggplot(dfNew.o.num, aes(x=PRED_IND, y=LIFESPAN.log)) + geom_point()
 ```
 
 Между признаками есть нелинейная зависимость. Зависимость выглядит как парабола. 
-Давайте посмотрим, какая будет значимость у модели, если PRED_IND сделать dummy variable.
+Давайте посмотрим, какая будет значимость у модели, если PRED_IND сделать dummy variables.
 ```{r}
 model5.dum = lm(LIFESPAN.log~BRAIN_WE.log+PRED_IND, 
             data=mutate(dfNew.o.num, PRED_IND=as.factor(PRED_IND)))
@@ -313,7 +313,7 @@ summary(model5.dum.beta)
 
 9.\ Теперь попробуем использовать автоматическое удаление критериев.
 
-Проведем backward AIC для данных без и с dummy variable.
+Проведем backward AIC для данных без и с dummy variables.
 ```{r, message=FALSE}
 library(MASS)
 model1.num.AIC <- lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, 
@@ -327,15 +327,15 @@ model1.dum.AIC <- lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+GESTTIME.log+P
 stepAIC(model1.dum.AIC, direction="backward")
 ```
 
-Проведем forward AIC для данных без и с dummy variable.
+Проведем forward AIC для данных без и с dummy variables.
 ```{r}
 model2.num.AIC <- lm(LIFESPAN.log~1, data=na.omit(dfNew.o.num))
-stepAIC(model2.num.AIC, direction="forward", scope=list(upper=model1.AIC,lower=model2.AIC))
+stepAIC(model2.num.AIC, direction="forward", scope=list(upper=model1.num.AIC,lower=model2.num.AIC))
 ```
 
 ```{r}
-model2.dum.AIC <- lm(LIFESPAN.log~1, data=na.omit(dfNew.o.dum))
-stepAIC(model2.dum.AIC, direction="forward", scope=list(upper=model1.AIC,lower=model2.AIC))
+model1.dum.AIC <- lm(LIFESPAN.log~1, data=na.omit(dfNew.o.dum))
+stepAIC(model1.dum.AIC, direction="forward", scope=list(upper=model1.dum.AIC,lower=model2.num.AIC))
 ```
 
 forward AIC и backward AIC для данных с dummy variables выдают луший одинаковый 
@@ -379,9 +379,6 @@ ggplot(tmp, aes(x=LIFESPAN, y=rstandard)) +
   geom_hline(yintercept=mean+std, color = "blue") +
   geom_hline(yintercept=mean+2*std, color = "blue") +
   geom_hline(yintercept=mean+3*std, color = "blue")
-
-# ols_plot_resid_stud_fit(model5.dum)
-# ols_plot_resid_stud(model5.dum)
 ```
 
 Есть один индивид за 3 сигмы от центра и два индивида за 2 сигмы, посмотрим кто это.
@@ -450,15 +447,14 @@ ggplot(dfNew.o.num, aes(x=BRAIN_WE.log, y=LIFESPAN.log, label=1:nrow(dfNew.o.num
 
 Действительно, так и есть. 6 и 27 это мыши и они выбросы относительно линии регрессии.
 
-### Предсказание продолжительности жизни капибар.
+# Предсказание продолжительности жизни капибар.
 На деле капибары живут 8-10 лет на воле и 10-12 в неволе. У капибар не много
-врагов в природе, но и на вершины пищевой цепи их не поставить, пусть PRED_IND
+врагов в природе, но и на вершину пищевой цепи их не поставить, пусть PRED_IND
 будет равен 3. Средний вес мозга у капибары 76 грамм.
 
 ```{r}
 new <- data_frame(BRAIN_WE.log=c(log(76)), PRED_IND=c(3)) %>% mutate(PRED_IND = as.factor(PRED_IND))
 exp(predict.lm(model5.dum, new, interval = "prediction"))
-# exp(predict.lm(model5.dum, new, interval = "confidence"))
 ```
 
 Удалось предсказать время жизни капибры по весу мозга и предположению о ее 
