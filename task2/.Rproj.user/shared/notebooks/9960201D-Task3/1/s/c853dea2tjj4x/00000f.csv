@@ -1,0 +1,2 @@
+"0","# dfNew.o.num"
+"0","new <- data_frame(BRAIN_WE.log=c(log(76)), PRED_IND=c(3)) %>% mutate(PRED_IND = as.factor(PRED_IND)); new"

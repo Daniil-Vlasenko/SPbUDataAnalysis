@@ -1,0 +1,6 @@
+"0","tmp <- dfNew.o.num %>% "
+"0","  mutate(LIFESPAN.log = scale(LIFESPAN.log), BRAIN_WE.log = scale(BRAIN_WE.log), "
+"0","         PRED_IND = scale(PRED_IND))"
+"0","model5.num.scale = lm(LIFESPAN.log~BRAIN_WE.log+PRED_IND, data=tmp)"
+"0",""
+"0","plot(ellipse(model5.num.scale, which = c(2, 3), level = 0.95), type=""l"") "

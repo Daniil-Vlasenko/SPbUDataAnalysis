@@ -1,8 +1,0 @@
-"0","new <- data_frame(BRAIN_WE.log=c(log(55)), PRED_IND=c(3)) %>% mutate(PRED_IND = as.factor(PRED_IND))"
-"0","exp(predict(model5.dum, new))"
-"1","      1 "
-"1","
-"
-"1","10.3911 "
-"1","
-"
