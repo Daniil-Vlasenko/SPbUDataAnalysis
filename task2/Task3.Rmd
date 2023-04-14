@@ -292,14 +292,16 @@ plot(ellipse(model5.num.scale, which = c(2, 3), level = 0.95), type="l")
 коэффициент при BRAIN_WE.log значим, так как его доверительная область далеко от
 нуля, а доверительная область коэффициента при PRED_IND захватывает 0.
 
-Посмотрим на оставшиеся два признака.
+Вспомним, что PRED_IND можно представить как dummy variable. Возможно зависимость
+между PRED_IND и LIFESPAN.log не линейная и модель будет более значимая если представить 
+PRED_IND как dummy variable, чтобы разные его значения могли вносить вклад своими 
+коэффициентами. Посмотрим на зависимость LIFESPAN.log и PRED_IND.
 ```{r}
-ggplot(dfNew.o.num, aes(x=PRED_IND, y=BRAIN_WE.log)) + geom_point()
+ggplot(dfNew.o.num, aes(x=PRED_IND, y=LIFESPAN.log)) + geom_point()
 ```
 
-Между признаками есть нелинейная зависимость, поэтому коэффициент корреляции 
-Пирсона близок к нулю. Зависимость выглядит как парабола. Давайте посмотрим 
-какая будет значимость у модели, если PRED_IND сделать dummy variable.
+Между признаками есть нелинейная зависимость. Зависимость выглядит как парабола. 
+Давайте посмотрим, какая будет значимость у модели, если PRED_IND сделать dummy variable.
 ```{r}
 model5.dum = lm(LIFESPAN.log~BRAIN_WE.log+PRED_IND, 
             data=mutate(dfNew.o.num, PRED_IND=as.factor(PRED_IND)))
@@ -311,39 +313,44 @@ summary(model5.dum.beta)
 
 9.\ Теперь попробуем использовать автоматическое удаление критериев.
 
-Проведем backward AIC.
+Проведем backward AIC для данных без и с dummy variable.
 ```{r, message=FALSE}
 library(MASS)
-model1.AIC <- lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, 
+model1.num.AIC <- lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, 
                 data=dfNew.o.num)
-stepAIC(model1.AIC, direction="backward")
+stepAIC(model1.num.AIC, direction="backward")
+```
+```{r, message=FALSE}
+library(MASS)
+model1.dum.AIC <- lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+GESTTIME.log+PRED_IND+EXP_IND+DANG_IND, 
+                data=dfNew.o.dum)
+stepAIC(model1.dum.AIC, direction="backward")
 ```
 
-Проведем forward AIC.
+Проведем forward AIC для данных без и с dummy variable.
 ```{r}
-model2.AIC <- lm(LIFESPAN.log~1, data=na.omit(dfNew.o.num))
-stepAIC(model2.AIC, direction="forward", scope=list(upper=model1.AIC,lower=model2.AIC))
+model2.num.AIC <- lm(LIFESPAN.log~1, data=na.omit(dfNew.o.num))
+stepAIC(model2.num.AIC, direction="forward", scope=list(upper=model1.AIC,lower=model2.AIC))
 ```
 
-Проведем both side AIC.
 ```{r}
-stepAIC(model1.AIC, direction="both", scope=list(upper=model1.AIC,lower=model2.AIC))
+model2.dum.AIC <- lm(LIFESPAN.log~1, data=na.omit(dfNew.o.dum))
+stepAIC(model2.dum.AIC, direction="forward", scope=list(upper=model1.AIC,lower=model2.AIC))
 ```
 
-both side AIC и backward AIC выдает луший одинаковый результат.
+forward AIC и backward AIC для данных с dummy variables выдают луший одинаковый 
+результат.
 
-Построим регрессионную модель на основе признаков, которые выбрал stepAIC 
-(все без GESTTIME.log).
+Построим регрессионную модель на основе признаков, которые выбрал stepAIC.
 ```{r}
-model.AIC <- lm(LIFESPAN.log~BODY_WEI.log+BRAIN_WE.log+SLEEP+PRED_IND+EXP_IND+DANG_IND, 
-                data=dfNew.o.num)
+model.AIC <- lm(LIFESPAN.log ~ BRAIN_WE.log + PRED_IND + DANG_IND + SLEEP, 
+                data=dfNew.o.dum)
 model.AIC.beta <- lm.beta(model.AIC)
 summary(model.AIC.beta)
 ```
  
- Модель хуже той, что мы строили с BRAIN_WE.log и DANG_IND с dummy variable по 
- p-value и multiple R-squared, так что дальше будем работать с нашей моделью а 
- не моделью AIC.
+ Модель на порядок хуже той, что мы строили с BRAIN_WE.log и DANG_IND с dummy 
+ variables по p-value, так что дальше будем работать с нашей моделью а не моделью AIC.
  
 10\. Проверим нормальность остатков.
 ```{r}
